@@ -1,8 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# URL de conexión a la base de datos
-DATABASE_URL = "postgresql://postgres:password@localhost:5432/ledgerview"
+from app.config import settings
+
+# URL de conexión a la base de datos (leída desde .env)
+DATABASE_URL = settings.DATABASE_URL
 
 # Engine de SQLAlchemy
 engine = create_engine(DATABASE_URL)
