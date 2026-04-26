@@ -30,7 +30,7 @@ high code quality.
 2.  Clone your fork locally
 
 ``` bash
-git clone https://github.com/YOUR_USERNAME/ledgerview.git
+git clone https://github.com/Linepixer/ledgerview.git
 ```
 
 3.  Create a new branch for your change
