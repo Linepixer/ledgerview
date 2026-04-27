@@ -13,6 +13,14 @@ def get_password_hash(password: str) -> str:
     # Devolvemos un string para guardarlo en la base de datos
     return hashed_password.decode('utf-8')
 
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    password_byte_enc = plain_password.encode('utf-8')
+    hashed_password_byte_enc = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_byte_enc, hashed_password_byte_enc)
+
+def get_user_by_email(db: Session, email: str) -> User | None:
+    return db.query(User).filter(User.email == email).first()
+
 def create_user(db: Session, user: UserCreate) -> User:
     hashed_password = get_password_hash(user.password)
     
