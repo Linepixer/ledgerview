@@ -8,7 +8,7 @@ from app.database import get_db
 from app.config import settings
 from app.models.user import User
 
-# Este es el esquema que le dice a Swagger dónde está el endpoint de login
+# OAuth2 scheme defining the login endpoint for Swagger
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -19,7 +19,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     
     try:
-        # Decodificamos el token
+        # Decode token
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
@@ -27,7 +27,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except InvalidTokenError:
         raise credentials_exception
         
-    # Buscamos al usuario en la base de datos para asegurar que sigue existiendo
+    # Check if user still exists in database
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise credentials_exception

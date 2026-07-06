@@ -28,6 +28,9 @@ def create_user(db: Session, user: UserCreate) -> User:
     db_user = User(
         id=uuid.uuid4(),
         email=user.email,
+        name=user.name,
+        birth_date=user.birth_date,
+        country=user.country,
         hashed_password=hashed_password,
         is_active=True
     )
@@ -38,3 +41,12 @@ def create_user(db: Session, user: UserCreate) -> User:
     db.refresh(db_user)
     
     return db_user
+
+def change_user_password(db: Session, user: User, current_password: str, new_password: str) -> bool:
+    if not verify_password(current_password, user.hashed_password):
+        return False
+    
+    user.hashed_password = get_password_hash(new_password)
+    db.commit()
+    db.refresh(user)
+    return True

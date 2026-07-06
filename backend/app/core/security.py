@@ -12,6 +12,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     
     to_encode.update({"exp": expire})
     
-    # Creamos el token usando la llave secreta
+    # Create the token using the secret key
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt

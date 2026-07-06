@@ -1,0 +1,186 @@
+import { useState } from 'react';
+import api from '../api';
+import es from '../locales/es.json';
+
+export default function Auth({ onLogin }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const [name, setName] = useState('');
+  const [bYear, setBYear] = useState('');
+  const [bMonth, setBMonth] = useState('');
+  const [bDay, setBDay] = useState('');
+  const [country, setCountry] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const t = es.auth;
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!isLogin && password !== confirmPassword) {
+      setError(t.passwordMismatch);
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        const formData = new URLSearchParams();
+        formData.append('username', email);
+        formData.append('password', password);
+        
+        const res = await api.post('/login', formData, {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        
+        localStorage.setItem('token', res.data.access_token);
+        onLogin();
+      } else {
+        const birthDate = (bYear && bMonth && bDay) 
+          ? new Date(`${bYear}-${String(bMonth).padStart(2, '0')}-${String(bDay).padStart(2, '0')}T00:00:00Z`).toISOString() 
+          : null;
+
+        const payload = { 
+          email, 
+          password, 
+          name: name || null, 
+          birth_date: birthDate, 
+          country: country || null 
+        };
+        await api.post('/users/', payload);
+        setIsLogin(true);
+        setError(t.registerSuccess);
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || t.defaultError);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: '500px', margin: '100px auto' }}>
+      <div className="card">
+        <h2 style={{ marginBottom: '1.5rem' }}>{isLogin ? t.loginTitle : t.registerTitle}</h2>
+        
+        {error && <div className={`badge ${error.includes('exitoso') ? 'badge-profit' : 'badge-loss'}`} style={{ marginBottom: '1rem', display: 'block', padding: '0.5rem' }}>{error}</div>}
+        
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {!isLogin && (
+            <>
+              <div>
+                <label className="summary-label">{t.nameLabel}</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder={t.namePlaceholder}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label className="summary-label">{t.birthDateLabel}</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                      value={bDay}
+                      onChange={(e) => setBDay(e.target.value)}
+                      style={{ flex: 1, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bDay ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
+                    >
+                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.day}</option>
+                      {days.map(d => <option key={d} value={d} style={{ color: 'white' }}>{d}</option>)}
+                    </select>
+                    <select
+                      value={bMonth}
+                      onChange={(e) => setBMonth(e.target.value)}
+                      style={{ flex: 1.5, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bMonth ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
+                    >
+                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.month}</option>
+                      {t.months.map((m, i) => <option key={i} value={i + 1} style={{ color: 'white' }}>{m}</option>)}
+                    </select>
+                    <select
+                      value={bYear}
+                      onChange={(e) => setBYear(e.target.value)}
+                      style={{ flex: 1.2, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bYear ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
+                    >
+                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.year}</option>
+                      {years.map(y => <option key={y} value={y} style={{ color: 'white' }}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="summary-label">{t.countryLabel}</label>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: country ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
+                  >
+                    <option value="" style={{ color: 'var(--text-muted)' }}>{t.countryPlaceholder}</option>
+                    {Object.entries(t.countries).map(([code, countryName]) => (
+                      <option key={code} value={countryName} style={{ color: 'white' }}>{countryName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+          <div>
+            <label className="summary-label">{t.emailLabel}</label>
+            <input 
+              type="email" 
+              required
+              placeholder={isLogin ? t.loginEmailPlaceholder : t.emailPlaceholder}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
+            />
+          </div>
+          <div>
+            <label className="summary-label">{t.passwordLabel}</label>
+            <input 
+              type="password" 
+              required
+              placeholder={isLogin ? t.loginPasswordPlaceholder : t.passwordPlaceholder}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
+            />
+          </div>
+          {!isLogin && (
+            <div>
+              <label className="summary-label">{t.confirmPasswordLabel}</label>
+              <input 
+                type="password" 
+                required
+                placeholder={t.confirmPasswordPlaceholder}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
+              />
+            </div>
+          )}
+          
+          <button type="submit" style={{ padding: '0.75rem', background: 'var(--accent)', color: 'var(--bg-main)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '1rem' }}>
+            {isLogin ? t.loginButton : t.registerButton}
+          </button>
+        </form>
+        
+        <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+          {isLogin ? `${t.noAccount} ` : `${t.hasAccount} `}
+          <span 
+            style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold' }}
+            onClick={() => { setIsLogin(!isLogin); setError(''); }}
+          >
+            {isLogin ? t.switchToRegister : t.switchToLogin}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+}

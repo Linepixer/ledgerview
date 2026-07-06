@@ -4,13 +4,19 @@ from datetime import datetime
 from decimal import Decimal
 
 class TransactionBase(BaseModel):
+    timestamp: datetime | None = None
     type: str
     quantity: Decimal
     price_per_unit: Decimal
+    total_value: Decimal
+    operated_currency: str | None = None
+    exchange_rate: Decimal | None = None
+    platform: str | None = None
+    notes: str | None = None
 
 class TransactionCreate(TransactionBase):
-    user_id: UUID
-    asset_id: UUID
+    ticker: str
+    asset_type: str = "Stock" # "Stock", "Crypto", etc.
 
 class TransactionResponse(TransactionCreate):
     id: UUID

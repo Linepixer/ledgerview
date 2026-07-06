@@ -15,6 +15,11 @@ class Transaction(Base):
     type = Column(String(50), nullable=False)
     quantity = Column(Numeric(24, 8), nullable=False)
     price_per_unit = Column(Numeric(24, 8), nullable=False)
+    total_value = Column(Numeric(24, 8), nullable=False)
+    operated_currency = Column(String(10), nullable=True)
+    exchange_rate = Column(Numeric(24, 8), nullable=True)
+    platform = Column(String(100), nullable=True)
+    notes = Column(String(500), nullable=True)
 
     user = relationship("User")
     asset = relationship("Asset")

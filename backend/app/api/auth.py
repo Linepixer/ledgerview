@@ -15,10 +15,10 @@ def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    # 1. Buscamos al usuario por su email
+    # 1. Find user by email
     user = user_service.get_user_by_email(db, email=form_data.username)
     
-    # 2. Si no existe o la contraseña no coincide, devolvemos error genérico por seguridad
+    # 2. If not found or password mismatch, return generic error for security
     if not user or not user_service.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -26,10 +26,10 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # 3. Si todo está correcto, generamos el token JWT
+    # 3. If correct, generate JWT token
     access_token = security.create_access_token(
-        data={"sub": str(user.id)} # "sub" (subject) es el estándar JWT para el ID del usuario
+        data={"sub": str(user.id)} # "sub" (subject) is the JWT standard for user ID
     )
     
-    # 4. Devolvemos el token en el formato que OAuth2 espera
+    # 4. Return the token in the format OAuth2 expects
     return {"access_token": access_token, "token_type": "bearer"}

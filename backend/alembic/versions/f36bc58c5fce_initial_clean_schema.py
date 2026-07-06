@@ -1,8 +1,8 @@
-"""Create actual tables
+"""Initial clean schema
 
-Revision ID: bc1d6e72539c
-Revises: c9a68307ddcd
-Create Date: 2026-04-26 14:43:54.986877
+Revision ID: f36bc58c5fce
+Revises: 
+Create Date: 2026-06-29 23:56:36.714539
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bc1d6e72539c'
-down_revision: Union[str, Sequence[str], None] = 'c9a68307ddcd'
+revision: str = 'f36bc58c5fce'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -31,9 +31,21 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_assets_id'), 'assets', ['id'], unique=False)
     op.create_index(op.f('ix_assets_ticker'), 'assets', ['ticker'], unique=True)
+    op.create_table('exchange_rate_history',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('timestamp', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('rate_type', sa.String(length=20), nullable=False),
+    sa.Column('rate_value', sa.Numeric(precision=24, scale=8), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_exchange_rate_history_id'), 'exchange_rate_history', ['id'], unique=False)
+    op.create_index(op.f('ix_exchange_rate_history_rate_type'), 'exchange_rate_history', ['rate_type'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=True),
+    sa.Column('birth_date', sa.DateTime(), nullable=True),
+    sa.Column('country', sa.String(length=100), nullable=True),
     sa.Column('hashed_password', sa.String(length=255), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
@@ -45,7 +57,8 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('timestamp', sa.DateTime(timezone=True), nullable=False),
     sa.Column('asset_id', sa.UUID(), nullable=False),
-    sa.Column('price', sa.Numeric(precision=24, scale=8), nullable=False),
+    sa.Column('price_usd', sa.Numeric(precision=24, scale=8), nullable=False),
+    sa.Column('price_ars', sa.Numeric(precision=24, scale=8), nullable=False),
     sa.Column('source', sa.String(length=100), nullable=True),
     sa.ForeignKeyConstraint(['asset_id'], ['assets.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -60,6 +73,11 @@ def upgrade() -> None:
     sa.Column('type', sa.String(length=50), nullable=False),
     sa.Column('quantity', sa.Numeric(precision=24, scale=8), nullable=False),
     sa.Column('price_per_unit', sa.Numeric(precision=24, scale=8), nullable=False),
+    sa.Column('total_value', sa.Numeric(precision=24, scale=8), nullable=False),
+    sa.Column('operated_currency', sa.String(length=10), nullable=True),
+    sa.Column('exchange_rate', sa.Numeric(precision=24, scale=8), nullable=True),
+    sa.Column('platform', sa.String(length=100), nullable=True),
+    sa.Column('notes', sa.String(length=500), nullable=True),
     sa.ForeignKeyConstraint(['asset_id'], ['assets.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -83,6 +101,9 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_exchange_rate_history_rate_type'), table_name='exchange_rate_history')
+    op.drop_index(op.f('ix_exchange_rate_history_id'), table_name='exchange_rate_history')
+    op.drop_table('exchange_rate_history')
     op.drop_index(op.f('ix_assets_ticker'), table_name='assets')
     op.drop_index(op.f('ix_assets_id'), table_name='assets')
     op.drop_table('assets')
