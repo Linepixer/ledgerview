@@ -106,9 +106,23 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
             ) : (
               transactions.map(tx => {
                 const isCrypto = ['Crypto', 'Criptomoneda'].includes(tx.asset_type) || ['BTC', 'XRP', 'USDT'].includes(tx.ticker);
-                const total = tx.total_value;
+                let total = tx.total_value;
+                let price = tx.price_per_unit;
                 const opCurrency = tx.operated_currency || 'USD';
                 
+                // Convert transaction values to match selected global currency
+                if (currency && opCurrency !== currency) {
+                  const rate = tx.exchange_rate || 1;
+                  if (currency === 'ARS' && opCurrency === 'USD') {
+                    price = price * rate;
+                    total = total * rate;
+                  } else if (currency === 'USD' && opCurrency === 'ARS') {
+                    price = price / rate;
+                    total = total / rate;
+                  }
+                }
+                
+                const displayCurrency = currency || opCurrency;
                 const isProfit = ['compra', 'intereses'].includes(tx.type.toLowerCase());
 
                 return (
@@ -125,8 +139,8 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
                     <td className="text-right font-semibold">
                       {isCrypto ? formatCrypto(tx.quantity) : tx.quantity}
                     </td>
-                    <td className="text-right text-muted">{formatCurrency(tx.price_per_unit, opCurrency)}</td>
-                    <td className="text-right">{formatCurrency(total, opCurrency)}</td>
+                    <td className="text-right text-muted">{formatCurrency(price, displayCurrency)}</td>
+                    <td className="text-right">{formatCurrency(total, displayCurrency)}</td>
                     <td className="text-muted" style={{fontSize: '0.85rem'}}>{tx.platform || '-'}</td>
                     <td>
                       <button 

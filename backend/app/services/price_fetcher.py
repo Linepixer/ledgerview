@@ -7,7 +7,7 @@ from typing import Dict, Optional
 class PriceFetcher:
     _cached_rates = None
     _cache_timestamp = 0
-    _CACHE_TTL = 60
+    _CACHE_TTL = 300
     _cached_asset_prices = {}
     _asset_cache_timestamps = {}
 
@@ -121,8 +121,12 @@ class PriceFetcher:
                 usd = PriceFetcher._fetch_bitso(f"{t.lower()}_usd")
                 if usd is None: usd = 0.0
                 
-                # Fetch ARS exact price if available (like BTC), else fallback to calculation
-                ars = PriceFetcher._fetch_bitso(f"{t.lower()}_ars")
+                # Fetch ARS exact price only for coins that have ARS markets on Bitso
+                if t in ["BTC", "ETH", "DAI", "USDT"]:
+                    ars = PriceFetcher._fetch_bitso(f"{t.lower()}_ars")
+                else:
+                    ars = None
+                    
                 if ars is None: ars = usd * usd_to_ars
                 
                 result = {"usd": usd, "ars": ars}

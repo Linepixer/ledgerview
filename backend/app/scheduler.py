@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.database import SessionLocal
 from app.models.asset import Asset
 from app.models.asset_price import AssetPrice
@@ -69,10 +70,9 @@ def warm_up_cache():
         assets = db.query(Asset).all()
         for asset in assets:
             t = asset.ticker.upper()
-            if t not in ["USD", "USDT", "USDC"]:
-                # Force refresh asset price
-                PriceFetcher._asset_cache_timestamps[t] = 0
-                PriceFetcher.get_asset_prices(asset.ticker, asset.type)
+            # Force refresh asset price
+            PriceFetcher._asset_cache_timestamps[t] = 0
+            PriceFetcher.get_asset_prices(asset.ticker, asset.type)
         logger.info("Cache warm up completed.")
     except Exception as e:
         logger.error(f"Error warming up cache: {e}")
@@ -96,7 +96,8 @@ def start_scheduler():
         IntervalTrigger(seconds=75, jitter=15),
         id="price_cache_warmer",
         name="Keep price cache hot",
-        replace_existing=True
+        replace_existing=True,
+        next_run_time=datetime.now()
     )
     
     scheduler.start()
