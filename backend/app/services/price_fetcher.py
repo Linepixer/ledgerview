@@ -7,8 +7,7 @@ from typing import Dict, Optional
 class PriceFetcher:
     _cached_rates = None
     _cache_timestamp = 0
-    _CACHE_TTL = 300  # 5 minutes caching
-    
+    _CACHE_TTL = 60
     _cached_asset_prices = {}
     _asset_cache_timestamps = {}
 

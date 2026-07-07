@@ -1,6 +1,7 @@
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.asset import Asset
@@ -53,6 +54,31 @@ def fetch_and_save_prices():
     finally:
         db.close()
 
+def warm_up_cache():
+    """
+    Background job to keep the PriceFetcher cache hot.
+    Runs every 1 minute.
+    """
+    logger.info("Warming up price cache...")
+    db: Session = SessionLocal()
+    try:
+        # Force refresh dollar rates
+        PriceFetcher._cache_timestamp = 0
+        PriceFetcher.get_dollar_rates()
+        
+        assets = db.query(Asset).all()
+        for asset in assets:
+            t = asset.ticker.upper()
+            if t not in ["USD", "USDT", "USDC"]:
+                # Force refresh asset price
+                PriceFetcher._asset_cache_timestamps[t] = 0
+                PriceFetcher.get_asset_prices(asset.ticker, asset.type)
+        logger.info("Cache warm up completed.")
+    except Exception as e:
+        logger.error(f"Error warming up cache: {e}")
+    finally:
+        db.close()
+
 def start_scheduler():
     # Schedule the job to run every day at 18:00 (Market close)
     scheduler.add_job(
@@ -62,6 +88,17 @@ def start_scheduler():
         name="Fetch and save asset prices daily",
         replace_existing=True
     )
+    
+    # Schedule the cache warmer to run with a base of 75 seconds and a jitter
+    # of up to 15 seconds (oscillates randomly between 60 and 90 seconds)
+    scheduler.add_job(
+        warm_up_cache,
+        IntervalTrigger(seconds=75, jitter=15),
+        id="price_cache_warmer",
+        name="Keep price cache hot",
+        replace_existing=True
+    )
+    
     scheduler.start()
     logger.info("Scheduler started.")
 
