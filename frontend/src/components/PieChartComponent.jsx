@@ -30,6 +30,12 @@ export default function PieChartComponent({ data }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
+        <defs>
+          <filter id="pieGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
         <Pie
           data={chartData}
           cx="50%"
@@ -39,13 +45,14 @@ export default function PieChartComponent({ data }) {
           paddingAngle={2}
           dataKey="value"
           stroke="none"
+          filter="url(#pieGlow)"
         >
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={TICKER_COLORS[entry.name] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip 
-          formatter={(value) => `${value.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`}
+        <Tooltip
+          formatter={(value) => `${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
           contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fafafa' }}
           itemStyle={{ color: '#fafafa' }}
         />
