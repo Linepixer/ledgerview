@@ -142,7 +142,12 @@ export default function Dashboard({ currency }) {
   };
 
   if (loading && !portfolio) {
-    return <div className="text-muted flex-row" style={{ justifyContent: 'center', marginTop: '100px' }}><RefreshCw className="animate-spin" /> Cargando portafolio...</div>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
+        <RefreshCw className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--accent)' }} />
+        <div style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.5px' }}>Cargando portafolio...</div>
+      </div>
+    );
   }
 
   if (error) {
@@ -219,7 +224,7 @@ export default function Dashboard({ currency }) {
               <div className="summary-label" style={{ marginBottom: '0.5rem' }}>Patrimonio Total</div>
               <div className="flex-row">
                 <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
-                <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginLeft: '1rem' }}>
+                <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginLeft: '1rem', fontSize: '1rem', padding: '0.2rem 0.6rem' }}>
                   {totalProfit >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
                   {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%)
                 </div>
@@ -350,7 +355,13 @@ export default function Dashboard({ currency }) {
                 </tr>
               </thead>
               <tbody>
-                {allAssets.map(asset => {
+                {[...allAssets].sort((a, b) => {
+                  const TYPE_ORDER = { 'Moneda Fiat': 1, 'ETFs': 2, 'Acciones': 3, 'Criptomonedas': 4 };
+                  const orderA = TYPE_ORDER[getAssetType(a.ticker)] || 99;
+                  const orderB = TYPE_ORDER[getAssetType(b.ticker)] || 99;
+                  if (orderA !== orderB) return orderA - orderB;
+                  return a.ticker.localeCompare(b.ticker);
+                }).map(asset => {
                   const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
                   return (
                     <tr 
@@ -363,7 +374,7 @@ export default function Dashboard({ currency }) {
                         <div className="text-muted" style={{ fontSize: '0.8rem' }}>{asset.name}</div>
                       </td>
                       <td className="text-muted">
-                        {asset.type}
+                        {getAssetType(asset.ticker)}
                       </td>
                       <td className="text-right font-semibold">
                         {formatCurrency(currentPrice, currency)}

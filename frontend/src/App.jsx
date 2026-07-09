@@ -52,13 +52,29 @@ function App() {
           )}
         </div>
       </header>
-      
+
       <main>
         {isAuthenticated ? <Dashboard currency={currency} /> : <Auth onLogin={() => {
           setIsAuthenticated(true)
           fetchUser()
         }} />}
       </main>
+
+      {isAuthenticated && (
+        <footer style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1.5rem 0 0.1rem 0',
+          marginTop: 'auto',
+          borderTop: '1px solid var(--border)',
+          color: 'var(--text-muted)',
+          fontSize: '0.85rem'
+        }}>
+          <div>LedgerView &copy; 2026 &mdash; Proyecto de código abierto para seguimiento de inversiones personales.</div>
+          <div>Contacto: <a href="mailto:diazmatias@linepixer.com" style={{ color: 'inherit', textDecoration: 'none' }}>diazmatias@linepixer.com</a></div>
+        </footer>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, RefreshCw, AlertTriangle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../api';
@@ -7,6 +7,30 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [timeRange, setTimeRange] = useState('MAX');
+
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    if (timeRange === 'MAX') return data;
+    
+    const now = new Date();
+    let cutoffDate = new Date();
+    
+    switch (timeRange) {
+      case '1S': cutoffDate.setDate(now.getDate() - 7); break;
+      case '1M': cutoffDate.setMonth(now.getMonth() - 1); break;
+      case '3M': cutoffDate.setMonth(now.getMonth() - 3); break;
+      case '6M': cutoffDate.setMonth(now.getMonth() - 6); break;
+      case '1A': cutoffDate.setFullYear(now.getFullYear() - 1); break;
+      default: break;
+    }
+    
+    const cutoffStr = cutoffDate.toISOString().split('T')[0];
+    const filtered = data.filter(d => d.date >= cutoffStr);
+    
+    if (filtered.length < 2) return data.slice(-2);
+    return filtered;
+  }, [data, timeRange]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -40,9 +64,9 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   };
 
   let color = 'var(--accent)';
-  if (data.length > 1) {
-    const firstValue = data[0][dataKey];
-    const lastValue = data[data.length - 1][dataKey];
+  if (filteredData.length > 1) {
+    const firstValue = filteredData[0][dataKey];
+    const lastValue = filteredData[filteredData.length - 1][dataKey];
     color = lastValue >= firstValue ? 'var(--profit)' : 'var(--loss)';
   }
 
@@ -81,7 +105,32 @@ export default function AssetDetailView({ asset, currency, onBack }) {
 
         </div>
 
-        <h3 style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>Historial de Precios</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-muted)', fontWeight: 500 }}>Historial de Precios</h3>
+          {!loading && !error && data.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem', borderRadius: '8px' }}>
+              {['1S', '1M', '3M', '6M', '1A', 'MAX'].map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  style={{
+                    background: timeRange === range ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    border: 'none',
+                    color: timeRange === range ? 'var(--text-main)' : 'var(--text-muted)',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    fontWeight: timeRange === range ? 'bold' : 'normal',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {range}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <div className="text-muted flex-row" style={{ justifyContent: 'center', height: '400px' }}>
@@ -98,7 +147,7 @@ export default function AssetDetailView({ asset, currency, onBack }) {
         ) : (
           <div style={{ width: '100%', height: 450 }}>
             <ResponsiveContainer>
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorAsset" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={color} stopOpacity={0.4}/>

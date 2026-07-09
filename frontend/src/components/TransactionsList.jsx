@@ -73,7 +73,12 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
   };
 
   if (loading && transactions.length === 0) {
-    return <div className="text-muted flex-row" style={{justifyContent: 'center', marginTop: '100px'}}><RefreshCw className="animate-spin" /> Cargando transacciones...</div>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
+        <RefreshCw className="animate-spin" size={32} style={{ marginBottom: '1rem', color: 'var(--accent)' }} />
+        <div style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0.5px' }}>Cargando transacciones...</div>
+      </div>
+    );
   }
 
   if (error) {
