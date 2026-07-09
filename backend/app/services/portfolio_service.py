@@ -205,3 +205,89 @@ def get_portfolio_history(db: Session, user_id: UUID) -> PortfolioHistoryRespons
         history[-1].total_value_ars = summary.total_value_ars
         
     return PortfolioHistoryResponse(history=history)
+
+from fastapi import HTTPException
+
+def get_portfolio_asset_history(db: Session, user_id: UUID, ticker: str) -> PortfolioHistoryResponse:
+    asset = db.query(Asset).filter(func.upper(Asset.ticker) == ticker.upper()).first()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+        
+    transactions = db.query(Transaction).filter(
+        Transaction.user_id == user_id, 
+        Transaction.asset_id == asset.id
+    ).order_by(Transaction.timestamp).all()
+    
+    if not transactions:
+        return PortfolioHistoryResponse(history=[])
+        
+    prices = db.query(AssetPrice).filter(AssetPrice.asset_id == asset.id).order_by(AssetPrice.timestamp).all()
+    
+    # We will compute daily values from the first transaction to today
+    start_date = transactions[0].timestamp.date()
+    end_date = datetime.now().date()
+    
+    # Map prices by date
+    daily_prices = defaultdict(dict)
+    for p in prices:
+        d = p.timestamp.date()
+        daily_prices[d][p.asset_id] = {
+            "usd": float(p.price_usd),
+            "ars": float(p.price_ars)
+        }
+        
+    # Group transactions by date
+    daily_txs = defaultdict(list)
+    for t in transactions:
+        daily_txs[t.timestamp.date()].append(t)
+        
+    history = []
+    current_balances = defaultdict(float)
+    last_known_prices = {}
+    
+    current_date = start_date
+    while current_date <= end_date:
+        # Apply transactions for this date
+        for t in daily_txs.get(current_date, []):
+            qty = float(t.quantity)
+            if t.type.lower() in ["compra", "intereses"]:
+                current_balances[t.asset_id] += qty
+            elif t.type.lower() in ["venta", "comisión", "comision"]:
+                current_balances[t.asset_id] -= qty
+                
+        # Update last known prices
+        if current_date in daily_prices:
+            for asset_id, p_data in daily_prices[current_date].items():
+                last_known_prices[asset_id] = p_data
+                
+        # Calculate portfolio value
+        val_usd = 0.0
+        val_ars = 0.0
+        for asset_id, qty in current_balances.items():
+            if qty > 0:
+                p_data = last_known_prices.get(asset_id)
+                if p_data:
+                    val_usd += qty * p_data["usd"]
+                    val_ars += qty * p_data["ars"]
+                    
+        history.append(PortfolioHistoryPoint(
+            date=current_date.strftime("%Y-%m-%d"),
+            total_value_usd=val_usd,
+            total_value_ars=val_ars
+        ))
+        
+        current_date += timedelta(days=1)
+        
+    # Overwrite the last point (today) with the actual live summary for this asset
+    if history and history[-1].date == end_date.strftime("%Y-%m-%d"):
+        summary = get_portfolio_summary(db, user_id)
+        # Find the specific asset in the summary
+        target_asset = next((a for a in summary.assets if a.ticker.upper() == ticker.upper()), None)
+        if target_asset:
+            history[-1].total_value_usd = target_asset.total_value_usd
+            history[-1].total_value_ars = target_asset.total_value_ars
+        else:
+            history[-1].total_value_usd = 0.0
+            history[-1].total_value_ars = 0.0
+        
+    return PortfolioHistoryResponse(history=history)

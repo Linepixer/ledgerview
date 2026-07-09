@@ -42,3 +42,19 @@ def get_history(
         return portfolio_service.get_portfolio_history(db=db, user_id=current_user.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/history/{ticker}", response_model=PortfolioHistoryResponse)
+def get_asset_history(
+    ticker: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns the historical daily portfolio value in ARS and USD for a specific asset.
+    """
+    try:
+        return portfolio_service.get_portfolio_asset_history(db=db, user_id=current_user.id, ticker=ticker)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -6,6 +6,8 @@ import TransactionsList from './TransactionsList';
 import PieChartComponent from './PieChartComponent';
 import PortfolioChart from './PortfolioChart';
 import AssetDetailView from './AssetDetailView';
+import PortfolioAssetDetailView from './PortfolioAssetDetailView';
+import CategoryProgressBars from './CategoryProgressBars';
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat('es-AR', {
@@ -30,7 +32,7 @@ export default function Dashboard({ currency }) {
   const [allAssets, setAllAssets] = useState([]);
   const [error, setError] = useState('');
 
-  // 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle'
+  // 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle', 'portfolio_asset_detalle'
   const [activeTab, setActiveTab] = useState('portfolio'); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -48,6 +50,14 @@ export default function Dashboard({ currency }) {
       else if (path.startsWith('/asset/')) {
         initialTab = 'cotizacion_detalle';
         const ticker = path.split('/')[2];
+        if (window.history.state?.asset?.ticker === ticker) {
+          initialAsset = window.history.state.asset;
+        } else {
+          initialAsset = { ticker: ticker, name: '' };
+        }
+      } else if (path.startsWith('/portfolio/possession/')) {
+        initialTab = 'portfolio_asset_detalle';
+        const ticker = path.split('/')[3];
         if (window.history.state?.asset?.ticker === ticker) {
           initialAsset = window.history.state.asset;
         } else {
@@ -91,6 +101,7 @@ export default function Dashboard({ currency }) {
     if (tab === 'cotizaciones') path = '/market';
     if (tab === 'transactions') path = '/transactions';
     if (tab === 'cotizacion_detalle' && asset) path = `/asset/${asset.ticker}`;
+    if (tab === 'portfolio_asset_detalle' && asset) path = `/portfolio/possession/${asset.ticker}`;
     
     window.history.pushState({ tab, asset }, '', path);
   };
@@ -145,6 +156,38 @@ export default function Dashboard({ currency }) {
   const totalAvgCost = portfolio.assets.reduce((acc, asset) => acc + ((isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd) * asset.quantity), 0);
   const totalProfitPct = totalAvgCost > 0 ? (totalProfit / totalAvgCost) * 100 : 0;
 
+  // Calculate category distribution
+  const getAssetType = (ticker) => {
+    const asset = allAssets.find(a => a.ticker === ticker);
+    if (asset) {
+      if (asset.type === 'Acción') return 'Acciones';
+      if (asset.type === 'Criptomoneda' || asset.type === 'Crypto') return 'Criptomonedas';
+      if (asset.type === 'ETF') return 'ETFs';
+      if (asset.type === 'Fiat' || asset.type === 'Efectivo') return 'Moneda Fiat';
+      return asset.type;
+    }
+    return 'Otros';
+  };
+
+  const categoryDistribution = portfolio.assets.reduce((acc, asset) => {
+    const type = getAssetType(asset.ticker);
+    const value = isArs ? asset.total_value_ars : asset.total_value_usd;
+    if (acc[type] === undefined) acc[type] = 0;
+    acc[type] += value;
+    return acc;
+  }, {
+    'Criptomonedas': 0,
+    'ETFs': 0,
+    'Moneda Fiat': 0,
+    'Acciones': 0
+  });
+
+  const categoryData = Object.keys(categoryDistribution).map(type => ({
+    type,
+    value: categoryDistribution[type],
+    percentage: totalValue > 0 ? (categoryDistribution[type] / totalValue) * 100 : 0
+  })).sort((a, b) => b.value - a.value);
+
   return (
     <div>
       {/* Tabs */}
@@ -178,7 +221,7 @@ export default function Dashboard({ currency }) {
                 <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
                 <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginLeft: '1rem' }}>
                   {totalProfit >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                  {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toFixed(2)}%)
+                  {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%)
                 </div>
               </div>
             </div>
@@ -192,15 +235,21 @@ export default function Dashboard({ currency }) {
           <div className="summary-cards">
             <div className="card">
               <div className="summary-label">Dólar Bolsa</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>${portfolio.exchange_rates.bolsa || '-'}</div>
+              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                {portfolio.exchange_rates.bolsa ? '$' + Math.round(portfolio.exchange_rates.bolsa).toLocaleString('es-AR') : '-'}
+              </div>
             </div>
             <div className="card">
               <div className="summary-label">Dólar Cripto</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>${portfolio.exchange_rates.cripto || '-'}</div>
+              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                {portfolio.exchange_rates.cripto ? '$' + Math.round(portfolio.exchange_rates.cripto).toLocaleString('es-AR') : '-'}
+              </div>
             </div>
             <div className="card">
               <div className="summary-label">Dólar Blue</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>${portfolio.exchange_rates.blue || '-'}</div>
+              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                {portfolio.exchange_rates.blue ? '$' + Math.round(portfolio.exchange_rates.blue).toLocaleString('es-AR') : '-'}
+              </div>
             </div>
           </div>
 
@@ -210,10 +259,17 @@ export default function Dashboard({ currency }) {
             </div>
           ) : (
             <>
-              {/* Pie Chart Section */}
+              {/* Pie Chart & Categories Section */}
               <div className="card" style={{ marginBottom: '2rem' }}>
-                <h3 style={{ marginBottom: '1rem' }}>Distribución de Activos</h3>
-                <PieChartComponent data={portfolio.assets} />
+                <h3 style={{ marginBottom: '1.5rem' }}>Distribución de Activos</h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1', minWidth: '300px', maxWidth: '400px' }}>
+                    <PieChartComponent data={portfolio.assets} />
+                  </div>
+                  <div style={{ flex: '1', minWidth: '300px', maxWidth: '500px' }}>
+                    <CategoryProgressBars data={categoryData} currency={currency} />
+                  </div>
+                </div>
               </div>
 
               <div className="table-container">
@@ -246,7 +302,7 @@ export default function Dashboard({ currency }) {
                       return (
                         <tr 
                           key={asset.ticker} 
-                          onClick={() => handleAssetClick(asset)}
+                          onClick={() => navigateTo('portfolio_asset_detalle', asset)}
                           style={{ cursor: 'pointer' }}
                         >
                           <td>
@@ -264,10 +320,10 @@ export default function Dashboard({ currency }) {
                           </td>
                           <td className="text-right">
                             <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`}>
-                              {profitPct > 0 ? '+' : ''}{profitPct.toFixed(2)}%
+                              {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%
                             </span>
                           </td>
-                          <td className="text-right text-muted">{asset.portfolio_percentage.toFixed(2)}%</td>
+                          <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</td>
                         </tr>
                       )
                     })}
@@ -343,12 +399,27 @@ export default function Dashboard({ currency }) {
         />
       )}
 
+      {activeTab === 'portfolio_asset_detalle' && selectedAsset && (
+        <PortfolioAssetDetailView 
+          asset={selectedAsset} 
+          currency={currency} 
+          onBack={() => {
+            if (window.history.state && window.history.state.tab === 'portfolio_asset_detalle') {
+              window.history.back();
+            } else {
+              navigateTo('portfolio');
+            }
+          }} 
+          onGoToMarket={(a) => navigateTo('cotizacion_detalle', a)}
+        />
+      )}
+
       {activeTab === 'transactions' && (
         <TransactionsList currency={currency} onTransactionDeleted={fetchData} refreshTrigger={refreshTransactions} />
       )}
 
       {/* Floating Action Button (solo visible en tabs principales) */}
-      {activeTab !== 'cotizacion_detalle' && (
+      {(activeTab !== 'cotizacion_detalle' && activeTab !== 'portfolio_asset_detalle') && (
         <button className="fab" onClick={() => setIsModalOpen(true)}>
           <Plus size={28} />
         </button>

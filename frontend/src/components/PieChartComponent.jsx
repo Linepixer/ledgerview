@@ -45,7 +45,7 @@ export default function PieChartComponent({ data }) {
           ))}
         </Pie>
         <Tooltip 
-          formatter={(value) => `${value.toFixed(2)}%`}
+          formatter={(value) => `${value.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`}
           contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fafafa' }}
           itemStyle={{ color: '#fafafa' }}
         />

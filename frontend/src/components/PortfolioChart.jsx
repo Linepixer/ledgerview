@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function PortfolioChart({ data, isArs }) {
+  const [timeRange, setTimeRange] = useState('MAX');
+
   if (!data || data.length === 0) {
     return (
       <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
@@ -9,18 +12,57 @@ export default function PortfolioChart({ data, isArs }) {
     );
   }
 
+  const filterData = () => {
+    if (timeRange === 'MAX') return data;
+    
+    const now = new Date();
+    let targetDate = new Date();
+    if (timeRange === '1S') targetDate.setDate(now.getDate() - 7);
+    if (timeRange === '1M') targetDate.setMonth(now.getMonth() - 1);
+    if (timeRange === '3M') targetDate.setMonth(now.getMonth() - 3);
+    if (timeRange === '6M') targetDate.setMonth(now.getMonth() - 6);
+    if (timeRange === '1A') targetDate.setFullYear(now.getFullYear() - 1);
+    
+    const targetString = targetDate.toISOString().split('T')[0];
+    const filtered = data.filter(d => d.date >= targetString);
+    
+    return filtered.length >= 2 ? filtered : data.slice(-2);
+  };
+
+  const filteredData = filterData();
   const dataKey = isArs ? 'total_value_ars' : 'total_value_usd';
   
-  // Determine color based on whether the portfolio went up or down
-  const firstValue = data[0][dataKey];
-  const lastValue = data[data.length - 1][dataKey];
+  // Determine color based on whether the portfolio went up or down in the filtered period
+  const firstValue = filteredData[0][dataKey];
+  const lastValue = filteredData[filteredData.length - 1][dataKey];
   const isProfit = lastValue >= firstValue;
   const color = isProfit ? 'var(--profit)' : 'var(--loss)';
 
   return (
-    <div style={{ width: '100%', height: 300, marginTop: '2rem' }}>
-      <ResponsiveContainer>
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+    <div style={{ width: '100%', height: 330, marginTop: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.25rem', marginBottom: '0.5rem', paddingRight: '10px' }}>
+        {['1S', '1M', '3M', '6M', '1A', 'MAX'].map(tr => (
+          <button 
+            key={tr}
+            onClick={() => setTimeRange(tr)}
+            style={{
+              background: timeRange === tr ? 'var(--border)' : 'transparent',
+              color: timeRange === tr ? 'var(--text-main)' : 'var(--text-muted)',
+              border: 'none',
+              padding: '0.25rem 0.5rem',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.75rem',
+              fontWeight: timeRange === tr ? 'bold' : 'normal',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {tr}
+          </button>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
@@ -41,9 +83,9 @@ export default function PortfolioChart({ data, isArs }) {
             tickLine={false} 
             tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
             tickFormatter={(value) => {
-              if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-              if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`;
-              return `$${value}`;
+              if (value >= 1000000) return `$${(value / 1000000).toLocaleString('es-AR', {minimumFractionDigits: 1, maximumFractionDigits: 1})}M`;
+              if (value >= 1000) return `$${(value / 1000).toLocaleString('es-AR', {minimumFractionDigits: 1, maximumFractionDigits: 1})}k`;
+              return `$${value.toLocaleString('es-AR')}`;
             }}
             width={80}
           />

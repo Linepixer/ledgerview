@@ -7,7 +7,7 @@ import './index.css'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [currency, setCurrency] = useState('ARS')
+  const [currency, setCurrency] = useState('USD')
   const [user, setUser] = useState(null)
 
   useEffect(() => {

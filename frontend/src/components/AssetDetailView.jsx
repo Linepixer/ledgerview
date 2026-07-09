@@ -79,19 +79,6 @@ export default function AssetDetailView({ asset, currency, onBack }) {
             </div>
           </div>
 
-          {/* Show portfolio specific info ONLY if it's passed (meaning we came from Portfolio) */}
-          {asset.total_value_usd !== undefined && (
-            <div className="text-right" style={{ background: 'var(--bg-main)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div className="summary-label">Tu Posición ({currency})</div>
-              <div className="font-semibold" style={{ fontSize: '1.5rem', margin: '0.25rem 0' }}>
-                {formatCurrency(isArs ? asset.total_value_ars : asset.total_value_usd)}
-              </div>
-              <div className={`badge ${asset.potential_profit_ars >= 0 ? 'badge-profit' : 'badge-loss'}`}>
-                {asset.potential_profit_ars >= 0 ? '+' : ''}
-                {(isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd).toFixed(2)}%
-              </div>
-            </div>
-          )}
         </div>
 
         <h3 style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>Historial de Precios</h3>
