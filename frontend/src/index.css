@@ -154,6 +154,7 @@ table {
 th, td {
   padding: 1.25rem 1rem;
   border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
 }
 
 th {

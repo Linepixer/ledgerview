@@ -32,7 +32,7 @@ export default function PortfolioAssetDetailView({ asset, currency, onBack, onGo
 
   // Formatters
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat(isArs ? 'es-AR' : 'en-US', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: isArs ? 0 : 2,
@@ -41,7 +41,7 @@ export default function PortfolioAssetDetailView({ asset, currency, onBack, onGo
   };
 
   const formatCrypto = (value) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-AR', {
       minimumFractionDigits: 4,
       maximumFractionDigits: 8,
     }).format(value);

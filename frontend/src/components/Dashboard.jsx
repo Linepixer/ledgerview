@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark } from 'lucide-react';
+import { AreaChart, Area, YAxis } from 'recharts';
 import api from '../api';
 import TransactionForm from './TransactionForm';
 import TransactionsList from './TransactionsList';
@@ -19,10 +20,117 @@ const formatCurrency = (value, currency) => {
 };
 
 const formatCrypto = (value) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-AR', {
     minimumFractionDigits: 4,
     maximumFractionDigits: 8,
   }).format(value);
+};
+
+const Sparkline = ({ data, dataKey }) => {
+  if (!data || data.length === 0) return <div style={{ width: 140, height: 40 }} />;
+  const first = data[0][dataKey];
+  const last = data[data.length - 1][dataKey];
+  const color = last >= first ? 'var(--profit)' : 'var(--loss)';
+  // Use a unique ID for the gradient based on the color to avoid mixing up multiple sparklines
+  const gradientId = `colorSpark_${color.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+  let pctChange = 0;
+  if (first > 0) {
+    pctChange = ((last - first) / first) * 100;
+  }
+  const pctText = (pctChange > 0 ? '+' : '') + pctChange.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <AreaChart width={90} height={40} data={data} style={{ filter: `drop-shadow(0px 3px 6px ${color}40)` }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.6} />
+            <stop offset="95%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <YAxis domain={['dataMin', 'dataMax']} hide />
+        <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fillOpacity={1} fill={`url(#${gradientId})`} isAnimationActive={true} animationDuration={1500} />
+      </AreaChart>
+      <span style={{ color: color, fontWeight: 600, fontSize: '0.85rem', width: '55px', textAlign: 'right' }}>{pctText}</span>
+    </div>
+  );
+};
+
+const CUSTOM_ASSET_NAMES = {
+  'USD': 'Dólar',
+  'SPY': 'SPDR S&P 500 ETF Trust',
+  'QQQ': 'Invesco QQQ Trust',
+  'GLD': 'SPDR Gold Trust',
+  'BTC': 'Bitcoin',
+  'USDT': 'Tether',
+  'XRP': 'Ripple'
+};
+
+const getAssetIcon = (ticker, type) => {
+  const cryptoUrl = {
+    'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=032',
+    'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032',
+    'XRP': 'https://cryptologos.cc/logos/xrp-xrp-logo.svg?v=032',
+    'ETH': 'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=032',
+  };
+
+  if (cryptoUrl[ticker]) {
+    if (ticker === 'XRP') {
+      return (
+        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={cryptoUrl[ticker]} alt={ticker} style={{ width: '16px', height: '16px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+        </div>
+      );
+    }
+    return <img src={cryptoUrl[ticker]} alt={ticker} style={{ width: '28px', height: '28px', objectFit: 'contain' }} />;
+  }
+
+  if (ticker === 'USD' || ticker === 'ARS') {
+    const symbol = ticker === 'USD' ? '$' : 'AR$';
+    const bg = ticker === 'USD' ? '#16a34a' : '#0284c7';
+    return (
+      <svg viewBox="0 0 512 512" width="28" height="28">
+        <circle cx="256" cy="256" r="256" fill={bg} />
+        <text x="50%" y="50%" textAnchor="middle" dy=".35em" fill="#fff" fontSize={ticker === 'USD' ? "260" : "180"} fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" textRendering="optimizeLegibility">{symbol}</text>
+      </svg>
+    );
+  }
+
+  // Generar un logo profesional para ETFs/Acciones
+  const colors = {
+    'SPY': '#c51f33',
+    'QQQ': '#1e3a8a', // Azul oscuro institucional
+    'GLD': '#ca8a04', // Amarillo oro oscuro
+  };
+  const bgColor = colors[ticker] || '#374151';
+  let displayTicker = ticker;
+  if (displayTicker.length > 3) displayTicker = displayTicker.substring(0, 3);
+
+  return (
+    <svg viewBox="0 0 512 512" width="28" height="28">
+      <circle cx="256" cy="256" r="256" fill={bgColor} />
+      <text x="50%" y="50%" textAnchor="middle" dy=".35em" fill="#fff" fontSize="165" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" textTransform="uppercase" textRendering="optimizeLegibility">{displayTicker}</text>
+    </svg>
+  );
+};
+
+const getTypeBadge = (type) => {
+  let bg = '#374151';
+  let color = '#d1d5db';
+  if (type === 'Criptomonedas' || type === 'Criptomoneda') { bg = 'rgba(139, 92, 246, 0.15)'; color = '#a78bfa'; }
+  if (type === 'ETFs') { bg = 'rgba(59, 130, 246, 0.15)'; color = '#60a5fa'; }
+  if (type === 'Moneda Fiat') { bg = 'rgba(16, 185, 129, 0.15)'; color = '#34d399'; }
+
+  return (
+    <span style={{
+      background: bg, color: color, padding: '0.25rem 0.6rem',
+      borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600,
+      whiteSpace: 'nowrap'
+    }}>
+      {type}
+    </span>
+  );
 };
 
 export default function Dashboard({ currency }) {
@@ -30,10 +138,11 @@ export default function Dashboard({ currency }) {
   const [portfolio, setPortfolio] = useState(null);
   const [history, setHistory] = useState([]);
   const [allAssets, setAllAssets] = useState([]);
+  const [assetsHistory, setAssetsHistory] = useState({});
   const [error, setError] = useState('');
 
   // 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle', 'portfolio_asset_detalle'
-  const [activeTab, setActiveTab] = useState('portfolio'); 
+  const [activeTab, setActiveTab] = useState('portfolio');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
@@ -44,7 +153,7 @@ export default function Dashboard({ currency }) {
       const path = window.location.pathname;
       let initialTab = 'portfolio';
       let initialAsset = null;
-      
+
       if (path.startsWith('/market')) initialTab = 'cotizaciones';
       else if (path.startsWith('/transactions')) initialTab = 'transactions';
       else if (path.startsWith('/asset/')) {
@@ -67,7 +176,7 @@ export default function Dashboard({ currency }) {
 
       setActiveTab(initialTab);
       setSelectedAsset(initialAsset);
-      
+
       const p = path === '/' ? '/portfolio' : path;
       window.history.replaceState({ tab: initialTab, asset: initialAsset }, '', p);
     };
@@ -80,14 +189,14 @@ export default function Dashboard({ currency }) {
         checkPath();
       }
     };
-    
+
     window.addEventListener('popstate', handlePopState);
-    
+
     // Initialize base state if entering directly via URL
     if (!window.history.state) {
       checkPath();
     }
-    
+
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
@@ -95,14 +204,14 @@ export default function Dashboard({ currency }) {
     if (activeTab === tab && selectedAsset?.ticker === asset?.ticker) return;
     setActiveTab(tab);
     setSelectedAsset(asset);
-    
+
     let path = `/${tab}`;
     if (tab === 'portfolio') path = '/portfolio';
     if (tab === 'cotizaciones') path = '/market';
     if (tab === 'transactions') path = '/transactions';
     if (tab === 'cotizacion_detalle' && asset) path = `/asset/${asset.ticker}`;
     if (tab === 'portfolio_asset_detalle' && asset) path = `/portfolio/possession/${asset.ticker}`;
-    
+
     window.history.pushState({ tab, asset }, '', path);
   };
 
@@ -117,7 +226,19 @@ export default function Dashboard({ currency }) {
       ]);
       setPortfolio(resSummary.data);
       setHistory(resHistory.data.history || []);
-      setAllAssets(resAssets.data || []);
+      const assets = resAssets.data || [];
+      setAllAssets(assets);
+
+      if (assets.length > 0) {
+        const histories = await Promise.all(assets.map(a => api.get(`/assets/${a.ticker}/history`).catch(() => null)));
+        const historyMap = {};
+        histories.forEach((res, idx) => {
+          if (res && res.data && res.data.history) {
+            historyMap[assets[idx].ticker] = res.data.history.slice(-30);
+          }
+        });
+        setAssetsHistory(historyMap);
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
       setError('Error al cargar los datos. Intenta iniciar sesión nuevamente.');
@@ -226,7 +347,7 @@ export default function Dashboard({ currency }) {
                 <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
                 <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginLeft: '1rem', fontSize: '1rem', padding: '0.2rem 0.6rem' }}>
                   {totalProfit >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                  {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%)
+                  {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
                 </div>
               </div>
             </div>
@@ -305,14 +426,14 @@ export default function Dashboard({ currency }) {
                       const isCrypto = ['BTC', 'XRP'].includes(asset.ticker);
 
                       return (
-                        <tr 
-                          key={asset.ticker} 
+                        <tr
+                          key={asset.ticker}
                           onClick={() => navigateTo('portfolio_asset_detalle', asset)}
                           style={{ cursor: 'pointer' }}
                         >
                           <td>
                             <div className="font-semibold">{asset.ticker}</div>
-                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{asset.name}</div>
+                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
                           </td>
                           <td className="text-right font-semibold">
                             {isCrypto ? formatCrypto(asset.quantity) : asset.quantity}
@@ -325,10 +446,10 @@ export default function Dashboard({ currency }) {
                           </td>
                           <td className="text-right">
                             <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`}>
-                              {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%
+                              {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                             </span>
                           </td>
-                          <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</td>
+                          <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
                         </tr>
                       )
                     })}
@@ -351,6 +472,7 @@ export default function Dashboard({ currency }) {
                 <tr>
                   <th>Activo</th>
                   <th>Tipo</th>
+                  <th>Variación mensual</th>
                   <th className="text-right">Precio de Mercado</th>
                 </tr>
               </thead>
@@ -364,17 +486,30 @@ export default function Dashboard({ currency }) {
                 }).map(asset => {
                   const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
                   return (
-                    <tr 
-                      key={asset.ticker} 
+                    <tr
+                      key={asset.ticker}
                       onClick={() => handleAssetClick(asset)}
                       style={{ cursor: 'pointer' }}
                     >
                       <td>
-                        <div className="font-semibold">{asset.ticker}</div>
-                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>{asset.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div style={{
+                            width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-hover)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                          }}>
+                            {getAssetIcon(asset.ticker, getAssetType(asset.ticker))}
+                          </div>
+                          <div>
+                            <div className="font-semibold">{asset.ticker}</div>
+                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
+                          </div>
+                        </div>
                       </td>
-                      <td className="text-muted">
-                        {getAssetType(asset.ticker)}
+                      <td>
+                        {getTypeBadge(getAssetType(asset.ticker))}
+                      </td>
+                      <td style={{ width: '180px' }}>
+                        <Sparkline data={assetsHistory[asset.ticker]} dataKey={isArs ? 'price_ars' : 'price_usd'} />
                       </td>
                       <td className="text-right font-semibold">
                         {formatCurrency(currentPrice, currency)}
@@ -396,9 +531,9 @@ export default function Dashboard({ currency }) {
       )}
 
       {activeTab === 'cotizacion_detalle' && selectedAsset && (
-        <AssetDetailView 
-          asset={selectedAsset} 
-          currency={currency} 
+        <AssetDetailView
+          asset={selectedAsset}
+          currency={currency}
           onBack={() => {
             if (window.history.state && window.history.state.tab === 'cotizacion_detalle') {
               window.history.back();
@@ -406,21 +541,21 @@ export default function Dashboard({ currency }) {
               const prevTab = selectedAsset.total_value_usd !== undefined ? 'portfolio' : 'cotizaciones';
               navigateTo(prevTab);
             }
-          }} 
+          }}
         />
       )}
 
       {activeTab === 'portfolio_asset_detalle' && selectedAsset && (
-        <PortfolioAssetDetailView 
-          asset={selectedAsset} 
-          currency={currency} 
+        <PortfolioAssetDetailView
+          asset={selectedAsset}
+          currency={currency}
           onBack={() => {
             if (window.history.state && window.history.state.tab === 'portfolio_asset_detalle') {
               window.history.back();
             } else {
               navigateTo('portfolio');
             }
-          }} 
+          }}
           onGoToMarket={(a) => navigateTo('cotizacion_detalle', a)}
         />
       )}

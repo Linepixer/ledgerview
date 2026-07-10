@@ -55,7 +55,7 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   
   // Formatters
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat(isArs ? 'es-AR' : 'en-US', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: isArs ? 0 : 2,

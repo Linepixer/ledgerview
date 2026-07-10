@@ -16,7 +16,7 @@ const formatCurrency = (value, currency) => {
 };
 
 const formatCrypto = (value) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-AR', {
     minimumFractionDigits: 4,
     maximumFractionDigits: 8,
   }).format(value);
