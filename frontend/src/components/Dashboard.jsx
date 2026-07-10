@@ -19,11 +19,23 @@ const formatCurrency = (value, currency) => {
   }).format(value);
 };
 
-const formatCrypto = (value) => {
-  return new Intl.NumberFormat('es-AR', {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 8,
-  }).format(value);
+const formatQuantity = (value, ticker) => {
+  const isFiat = ['USD', 'ARS', 'EUR'].includes(ticker);
+  const isCrypto = ['BTC', 'ETH', 'USDT', 'USDC', 'XRP', 'BNB', 'ADA', 'SOL'].includes(ticker);
+  
+  if (isFiat) {
+    if (value % 1 === 0) {
+      return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+    }
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  }
+  
+  if (isCrypto) {
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
+  }
+  
+  // Acciones / ETFs
+  return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
 };
 
 const Sparkline = ({ data, dataKey }) => {
@@ -436,7 +448,7 @@ export default function Dashboard({ currency }) {
                             <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
                           </td>
                           <td className="text-right font-semibold">
-                            {isCrypto ? formatCrypto(asset.quantity) : asset.quantity}
+                            {formatQuantity(asset.quantity, asset.ticker)}
                           </td>
                           <td className="text-right">{formatCurrency(currentPrice, currency)}</td>
                           <td className="text-right text-muted">{formatCurrency(avgPrice, currency)}</td>

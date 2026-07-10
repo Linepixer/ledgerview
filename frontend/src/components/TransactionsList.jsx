@@ -15,11 +15,22 @@ const formatCurrency = (value, currency) => {
   }).format(value);
 };
 
-const formatCrypto = (value) => {
-  return new Intl.NumberFormat('es-AR', {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 8,
-  }).format(value);
+const formatQuantity = (value, ticker) => {
+  const isFiat = ['USD', 'ARS', 'EUR'].includes(ticker);
+  const isCrypto = ['BTC', 'ETH', 'USDT', 'USDC', 'XRP', 'BNB', 'ADA', 'SOL'].includes(ticker);
+  
+  if (isFiat) {
+    if (value % 1 === 0) {
+      return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+    }
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  }
+  
+  if (isCrypto) {
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
+  }
+  
+  return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
 };
 
 const formatDate = (dateString) => {
@@ -142,7 +153,7 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
                       </span>
                     </td>
                     <td className="text-right font-semibold">
-                      {isCrypto ? formatCrypto(tx.quantity) : tx.quantity}
+                      {formatQuantity(tx.quantity, tx.ticker)}
                     </td>
                     <td className="text-right text-muted">{formatCurrency(price, displayCurrency)}</td>
                     <td className="text-right">{formatCurrency(total, displayCurrency)}</td>
