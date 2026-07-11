@@ -20,16 +20,14 @@ def fetch_and_save_prices():
     logger.info("Starting daily price fetch job...")
     db: Session = SessionLocal()
     try:
-        # Get all distinct assets currently in the database
         assets = db.query(Asset).all()
         
-        # Get dollar rates once to ensure consistency
         rates = PriceFetcher.get_dollar_rates()
         usd_to_ars = rates.get("cripto") or rates.get("blue") or rates.get("bolsa") or 1500.0
 
         for asset in assets:
             if asset.ticker.upper() in ["USD", "USDT", "USDC"]:
-                continue # We don't historically track stablecoins to themselves usually, but we could.
+                continue # Exclude stablecoin to stablecoin historical tracking.
                 
             prices = PriceFetcher.get_asset_prices(asset.ticker, asset.type)
             if prices:
@@ -63,14 +61,12 @@ def warm_up_cache():
     logger.info("Warming up price cache...")
     db: Session = SessionLocal()
     try:
-        # Force refresh dollar rates
         PriceFetcher._cache_timestamp = 0
         PriceFetcher.get_dollar_rates()
         
         assets = db.query(Asset).all()
         for asset in assets:
             t = asset.ticker.upper()
-            # Force refresh asset price
             PriceFetcher._asset_cache_timestamps[t] = 0
             PriceFetcher.get_asset_prices(asset.ticker, asset.type)
         logger.info("Cache warm up completed.")
@@ -80,7 +76,7 @@ def warm_up_cache():
         db.close()
 
 def start_scheduler():
-    # Schedule the job to run every day at 18:00 (Market close)
+    # Schedule job to run daily at 18:00 (Market close)
     scheduler.add_job(
         fetch_and_save_prices,
         CronTrigger(hour=18, minute=0),
@@ -89,8 +85,7 @@ def start_scheduler():
         replace_existing=True
     )
     
-    # Schedule the cache warmer to run with a base of 75 seconds and a jitter
-    # of up to 15 seconds (oscillates randomly between 60 and 90 seconds)
+    # Schedule cache warmer with 75s base interval and 15s jitter
     scheduler.add_job(
         warm_up_cache,
         IntervalTrigger(seconds=75, jitter=15),

@@ -16,14 +16,12 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Initialize current date and time
   useEffect(() => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     setTimestamp(now.toISOString().slice(0, 16));
   }, []);
 
-  // Auto-fill price quote
   useEffect(() => {
     if (!exchangeRates || !ticker) {
       setExchangeRate('');
@@ -53,7 +51,7 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
     return 'Stock';
   };
 
-  // Smart Math Logic Real-time
+  // Automatically compute missing values (Quantity, Unit Price, or Total)
   const handleQuantityChange = (e) => {
     let val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
     if ((val.match(/\./g) || []).length > 1) return;

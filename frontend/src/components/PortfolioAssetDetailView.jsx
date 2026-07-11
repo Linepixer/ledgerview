@@ -30,7 +30,6 @@ export default function PortfolioAssetDetailView({ asset, currency, onBack, onGo
 
   const isArs = currency === 'ARS';
 
-  // Formatters
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',

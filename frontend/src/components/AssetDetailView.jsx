@@ -53,7 +53,6 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   const isArs = currency === 'ARS';
   const dataKey = isArs ? 'price_ars' : 'price_usd';
   
-  // Formatters
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',

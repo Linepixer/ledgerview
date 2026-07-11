@@ -34,7 +34,7 @@ const formatQuantity = (value, ticker) => {
     return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
   }
   
-  // Acciones / ETFs
+  // Equities / ETFs
   return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
 };
 
@@ -109,11 +109,11 @@ const getAssetIcon = (ticker, type) => {
     );
   }
 
-  // Generar un logo profesional para ETFs/Acciones
+  // Generate dynamic SVG logos for equities
   const colors = {
     'SPY': '#c51f33',
-    'QQQ': '#1e3a8a', // Azul oscuro institucional
-    'GLD': '#ca8a04', // Amarillo oro oscuro
+    'QQQ': '#1e3a8a',
+    'GLD': '#ca8a04',
   };
   const bgColor = colors[ticker] || '#374151';
   let displayTicker = ticker;
@@ -153,13 +153,13 @@ export default function Dashboard({ currency }) {
   const [assetsHistory, setAssetsHistory] = useState({});
   const [error, setError] = useState('');
 
-  // 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle', 'portfolio_asset_detalle'
+  // Valid tabs: 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle', 'portfolio_asset_detalle'
   const [activeTab, setActiveTab] = useState('portfolio');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
 
-  // Sincronización con el historial del navegador
+  // Browser history synchronization
   useEffect(() => {
     const checkPath = () => {
       const path = window.location.pathname;
@@ -294,7 +294,6 @@ export default function Dashboard({ currency }) {
   const totalAvgCost = portfolio.assets.reduce((acc, asset) => acc + ((isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd) * asset.quantity), 0);
   const totalProfitPct = totalAvgCost > 0 ? (totalProfit / totalAvgCost) * 100 : 0;
 
-  // Calculate category distribution
   const getAssetType = (ticker) => {
     const asset = allAssets.find(a => a.ticker === ticker);
     if (asset) {
@@ -397,7 +396,6 @@ export default function Dashboard({ currency }) {
             </div>
           ) : (
             <>
-              {/* Pie Chart & Categories Section */}
               <div className="card" style={{ marginBottom: '2rem' }}>
                 <h3 style={{ marginBottom: '1.5rem' }}>Distribución de Activos</h3>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
@@ -576,14 +574,13 @@ export default function Dashboard({ currency }) {
         <TransactionsList currency={currency} onTransactionDeleted={fetchData} refreshTrigger={refreshTransactions} />
       )}
 
-      {/* Floating Action Button (solo visible en tabs principales) */}
+      {/* Floating Action Button (only visible on main tabs) */}
       {(activeTab !== 'cotizacion_detalle' && activeTab !== 'portfolio_asset_detalle') && (
         <button className="fab" onClick={() => setIsModalOpen(true)}>
           <Plus size={28} />
         </button>
       )}
 
-      {/* Modal for Transaction Form */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

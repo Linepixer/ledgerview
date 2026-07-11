@@ -48,15 +48,12 @@ class PriceFetcher:
 
         rates = {"bolsa": 1499.0, "cripto": 1541.0, "blue": 1500.0}
         
-        # MEP from DolarHoy
         mep = PriceFetcher._scrape_dolarhoy("https://dolarhoy.com/cotizaciondolarbolsa")
         if mep: rates["bolsa"] = mep
             
-        # Blue from DolarHoy
         blue = PriceFetcher._scrape_dolarhoy("https://dolarhoy.com/cotizaciondolarblue")
         if blue: rates["blue"] = blue
             
-        # Cripto from Bitso (USDT/ARS)
         cripto = PriceFetcher._fetch_bitso("usdt_ars")
         if cripto: rates["cripto"] = cripto
 
@@ -67,7 +64,7 @@ class PriceFetcher:
 
     @staticmethod
     def _scrape_iol_specific(ticker: str) -> Optional[float]:
-        # User requested exact URLs for these CEDEARs
+        # Exact URLs mapping for specific CEDEARs
         urls = {
             "SPY": "https://iol.invertironline.com/titulo/cotizacion/BCBA/SPY/ETF-SPDR-S-P-500/",
             "SPYD": "https://iol.invertironline.com/titulo/cotizacion/BCBA/SPYD/ETF-SPDR-S-P-500/",
@@ -78,7 +75,7 @@ class PriceFetcher:
         }
         
         t = ticker.upper()
-        # Fallback to dynamic URL if not in dict
+        # Fallback to dynamic URL
         url = urls.get(t, f"https://iol.invertironline.com/titulo/cotizacion/BCBA/{t}/")
         
         try:
@@ -98,13 +95,11 @@ class PriceFetcher:
         t = ticker.upper()
         now = time.time()
         
-        # Check cache first
         if t in PriceFetcher._cached_asset_prices:
             if now - PriceFetcher._asset_cache_timestamps.get(t, 0) < PriceFetcher._CACHE_TTL:
                 return PriceFetcher._cached_asset_prices[t]
                 
         if t in ["USD", "USDT", "USDC"]:
-            # Native USD value
             usd = 1.0
             if t == "USD":
                 rates = PriceFetcher.get_dollar_rates()
@@ -117,11 +112,10 @@ class PriceFetcher:
             usd_to_ars = rates.get("cripto") or 1500.0
                 
             if asset_type.lower() == "criptomoneda":
-                # Fetch USD exact price
                 usd = PriceFetcher._fetch_bitso(f"{t.lower()}_usd")
                 if usd is None: usd = 0.0
                 
-                # Fetch ARS exact price only for coins that have ARS markets on Bitso
+                # Fetch exact ARS price for supported Bitso markets
                 if t in ["BTC", "ETH", "DAI", "USDT"]:
                     ars = PriceFetcher._fetch_bitso(f"{t.lower()}_ars")
                 else:
@@ -131,7 +125,7 @@ class PriceFetcher:
                 
                 result = {"usd": usd, "ars": ars}
             else:
-                # Assume it's a CEDEAR or ETF traded in IOL
+                # Assume asset is a CEDEAR or ETF traded on IOL
                 ars = PriceFetcher._scrape_iol_specific(t) or 0.0
                 usd = PriceFetcher._scrape_iol_specific(t + "D")
                 
@@ -139,7 +133,6 @@ class PriceFetcher:
                 
                 result = {"usd": usd, "ars": ars}
             
-        # Save to cache
         PriceFetcher._cached_asset_prices[t] = result
         PriceFetcher._asset_cache_timestamps[t] = now
         

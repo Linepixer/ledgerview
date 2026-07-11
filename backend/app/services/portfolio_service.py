@@ -13,19 +13,15 @@ from app.services.price_fetcher import PriceFetcher
 logger = logging.getLogger(__name__)
 
 def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
-    # 1. Fetch current exchange rates
     rates = PriceFetcher.get_dollar_rates()
     current_usd_to_ars = rates.get("cripto") or rates.get("blue") or rates.get("bolsa") or 1500.0
     
-    # 2. Fetch all transactions for the user
     transactions = db.query(Transaction).filter(Transaction.user_id == user_id).all()
     
-    # 3. Fetch all assets to get names/tickers
     assets = db.query(Asset).all()
     asset_map = {a.id: a for a in assets}
     
-    # 4. Aggregate data per asset
-    # For average purchase price, we track total spent in ARS and USD and total quantity bought
+    # Track total spent in ARS/USD and quantity bought to calculate average purchase price
     asset_data = defaultdict(lambda: {
         "quantity": 0.0,
         "total_spent_ars": 0.0,
@@ -57,12 +53,11 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
             asset_data[t.asset_id]["quantity"] -= qty
             # but we might want to handle realized gains later.
             
-    # 5. Build portfolio assets and fetch current prices
     portfolio_assets = []
     total_portfolio_usd = 0.0
     total_portfolio_ars = 0.0
     
-    # Keep track of fetched prices to avoid redundant calls
+    # Cache fetched prices to minimize redundant API calls
     current_prices: Dict[UUID, float] = {}
     
     for asset_id, data in asset_data.items():
@@ -114,11 +109,10 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
             potential_profit_usd=profit_usd,
             profit_percentage_ars=profit_pct_ars,
             profit_percentage_usd=profit_pct_usd,
-            portfolio_percentage=0.0 # Will calculate next pass
+            portfolio_percentage=0.0
         )
         portfolio_assets.append(p_asset)
         
-    # 6. Calculate portfolio percentages
     for pa in portfolio_assets:
         if total_portfolio_usd > 0:
             pa.portfolio_percentage = (pa.total_value_usd / total_portfolio_usd) * 100
@@ -145,8 +139,7 @@ def get_portfolio_history(db: Session, user_id: UUID) -> PortfolioHistoryRespons
     start_date = transactions[0].timestamp.date()
     end_date = datetime.now().date()
     
-    # Map prices by date
-    # Keep the latest price per day per asset
+    # Map latest prices by date
     daily_prices = defaultdict(dict)
     for p in prices:
         d = p.timestamp.date()
@@ -197,8 +190,7 @@ def get_portfolio_history(db: Session, user_id: UUID) -> PortfolioHistoryRespons
         
         current_date += timedelta(days=1)
         
-    # Overwrite the last point (today) with the actual live summary to ensure the chart 
-    # perfectly matches the Dashboard's current totals, even if historical data is missing.
+    # Overwrite the last data point with the live summary to ensure chart consistency with dashboard totals.
     if history and history[-1].date == end_date.strftime("%Y-%m-%d"):
         summary = get_portfolio_summary(db, user_id)
         history[-1].total_value_usd = summary.total_value_usd
@@ -278,7 +270,7 @@ def get_portfolio_asset_history(db: Session, user_id: UUID, ticker: str) -> Port
         
         current_date += timedelta(days=1)
         
-    # Overwrite the last point (today) with the actual live summary for this asset
+    # Overwrite the last data point with the live summary to ensure chart consistency.
     if history and history[-1].date == end_date.strftime("%Y-%m-%d"):
         summary = get_portfolio_summary(db, user_id)
         # Find the specific asset in the summary

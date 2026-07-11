@@ -11,13 +11,11 @@ services:
     restart: unless-stopped
 
   api:
-    build:
-      context: ./backend
+    image: ghcr.io/linepixer/ledgerview-api:latest
     container_name: ledgerview-api
     env_file:
       - .env
     environment:
-      # Override to use docker internal network
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
       - "8000:8000"
@@ -26,16 +24,20 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: ./frontend
-      args:
-        # API URL accessible from the client's browser
-        - VITE_API_URL=http://localhost:8000
+    image: ghcr.io/linepixer/ledgerview-web:latest
     container_name: ledgerview-web
     ports:
       - "3000:80"
     depends_on:
       - api
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 ledgerview-api ledgerview-web
     restart: unless-stopped
 
 volumes:

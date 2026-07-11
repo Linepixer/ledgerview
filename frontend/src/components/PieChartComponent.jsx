@@ -1,20 +1,19 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-// Professional, highly distinct palette (inspired by Tableau 10, optimized for dark mode)
+// Dark-mode optimized color palette
 const TICKER_COLORS = {
-  USD: '#59a14f',  // Muted Green
-  GLD: '#edc948',  // Muted Gold
-  BTC: '#f28e2c',  // Muted Orange
-  XRP: '#ff9da7',  // Muted Pink
-  USDT: '#e15759', // Muted Red
-  QQQ: '#76b7b2',  // Muted Cyan
-  SPY: '#4e79a7',  // Muted Blue (default/remaining)
+  USD: '#59a14f',
+  GLD: '#edc948',
+  BTC: '#f28e2c',
+  XRP: '#ff9da7',
+  USDT: '#e15759',
+  QQQ: '#76b7b2',
+  SPY: '#4e79a7',
 };
 
 const DEFAULT_COLORS = ['#b07aa1', '#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#ff9da7'];
 
 export default function PieChartComponent({ data }) {
-  // Filter out assets with 0 value
   const chartData = data
     .filter(asset => asset.portfolio_percentage > 0)
     .map(asset => ({
