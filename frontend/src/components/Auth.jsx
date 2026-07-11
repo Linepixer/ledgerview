@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import es from '../locales/es.json';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Auth({ onLogin }) {
   const [isLogin, setIsLogin] = useState(() => {
@@ -10,6 +11,8 @@ export default function Auth({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [name, setName] = useState('');
   const [bYear, setBYear] = useState('');
@@ -147,7 +150,7 @@ export default function Auth({ onLogin }) {
                       onChange={(e) => setBDay(e.target.value)}
                       style={{ flex: 1, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bDay ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
                     >
-                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.day}</option>
+                      <option value="" disabled hidden style={{ color: 'var(--text-muted)' }}>{t.day}</option>
                       {days.map(d => <option key={d} value={d} style={{ color: 'white' }}>{d}</option>)}
                     </select>
                     <select
@@ -155,7 +158,7 @@ export default function Auth({ onLogin }) {
                       onChange={(e) => setBMonth(e.target.value)}
                       style={{ flex: 1.5, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bMonth ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
                     >
-                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.month}</option>
+                      <option value="" disabled hidden style={{ color: 'var(--text-muted)' }}>{t.month}</option>
                       {t.months.map((m, i) => <option key={i} value={i + 1} style={{ color: 'white' }}>{m}</option>)}
                     </select>
                     <select
@@ -163,7 +166,7 @@ export default function Auth({ onLogin }) {
                       onChange={(e) => setBYear(e.target.value)}
                       style={{ flex: 1.2, padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: bYear ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
                     >
-                      <option value="" style={{ color: 'var(--text-muted)' }}>{t.year}</option>
+                      <option value="" disabled hidden style={{ color: 'var(--text-muted)' }}>{t.year}</option>
                       {years.map(y => <option key={y} value={y} style={{ color: 'white' }}>{y}</option>)}
                     </select>
                   </div>
@@ -175,7 +178,7 @@ export default function Auth({ onLogin }) {
                     onChange={(e) => setCountry(e.target.value)}
                     style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: country ? 'white' : 'var(--text-muted)', borderRadius: '4px' }}
                   >
-                    <option value="" style={{ color: 'var(--text-muted)' }}>{t.countryPlaceholder}</option>
+                    <option value="" disabled hidden style={{ color: 'var(--text-muted)' }}>{t.countryPlaceholder}</option>
                     {Object.entries(t.countries).map(([code, countryName]) => (
                       <option key={code} value={countryName} style={{ color: 'white' }}>{countryName}</option>
                     ))}
@@ -197,26 +200,44 @@ export default function Auth({ onLogin }) {
           </div>
           <div>
             <label className="summary-label">{t.passwordLabel}</label>
-            <input 
-              type="password" 
-              required
-              placeholder={isLogin ? t.loginPasswordPlaceholder : t.passwordPlaceholder}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
-            />
+            <div className="password-input-flex">
+              <input 
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder={isLogin ? t.loginPasswordPlaceholder : t.passwordPlaceholder}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ flex: 1, color: 'white', outline: 'none', minWidth: 0 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ paddingRight: '0.75rem', paddingLeft: '0.25rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           {!isLogin && (
             <div>
               <label className="summary-label">{t.confirmPasswordLabel}</label>
-              <input 
-                type="password" 
-                required
-                placeholder={t.confirmPasswordPlaceholder}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'white', borderRadius: '4px' }}
-              />
+              <div className="password-input-flex">
+                <input 
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  placeholder={t.confirmPasswordPlaceholder}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{ flex: 1, color: 'white', outline: 'none', minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ paddingRight: '0.75rem', paddingLeft: '0.25rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           )}
           

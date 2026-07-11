@@ -317,3 +317,24 @@ input:focus, select:focus, textarea:focus {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* Password input wrapper */
+.password-input-flex {
+  display: flex;
+  margin-top: 0.5rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.password-input-flex:focus-within {
+  border-color: var(--text-muted) !important;
+}
+
+.password-input-flex input {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+}
