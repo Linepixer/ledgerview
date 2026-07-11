@@ -61,4 +61,4 @@ jobs:
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
           build-args: |
-            VITE_API_URL=http://localhost:8000
+            VITE_API_URL=https://ledger.linepixer.com/api
