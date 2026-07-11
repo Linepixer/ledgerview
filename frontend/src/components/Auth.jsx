@@ -7,6 +7,7 @@ export default function Auth({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   const [name, setName] = useState('');
   const [bYear, setBYear] = useState('');
@@ -24,6 +25,7 @@ export default function Auth({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNeedsVerification(false);
 
     if (!isLogin && password !== confirmPassword) {
       setError(t.passwordMismatch);
@@ -59,7 +61,22 @@ export default function Auth({ onLogin }) {
         setError(t.registerSuccess);
       }
     } catch (err) {
-      setError(err.response?.data?.detail || t.defaultError);
+      if (err.response?.status === 403 && err.response?.data?.detail === 'not_verified') {
+        setError(t.notVerified);
+        setNeedsVerification(true);
+      } else {
+        setError(err.response?.data?.detail || t.defaultError);
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      await api.post('/resend-verification', { email });
+      setError(t.emailSent);
+      setNeedsVerification(false);
+    } catch (err) {
+      setError(t.defaultError);
     }
   };
 
@@ -68,7 +85,17 @@ export default function Auth({ onLogin }) {
       <div className="card">
         <h2 style={{ marginBottom: '1.5rem' }}>{isLogin ? t.loginTitle : t.registerTitle}</h2>
         
-        {error && <div className={`badge ${error.includes('exitoso') ? 'badge-profit' : 'badge-loss'}`} style={{ marginBottom: '1rem', display: 'block', padding: '0.5rem' }}>{error}</div>}
+        {error && <div className={`badge ${error.includes('exitoso') || error.includes('enviado') ? 'badge-profit' : 'badge-loss'}`} style={{ marginBottom: '1rem', display: 'block', padding: '0.5rem' }}>{error}</div>}
+        
+        {needsVerification && (
+          <button 
+            type="button" 
+            onClick={handleResendVerification}
+            style={{ width: '100%', marginBottom: '1.5rem', padding: '0.75rem', background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            {t.resendEmail}
+          </button>
+        )}
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {!isLogin && (

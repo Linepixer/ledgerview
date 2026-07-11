@@ -6,6 +6,8 @@ from app.schemas.user import UserCreate, UserResponse, ChangePasswordRequest
 from app.services import user_service
 from app.models.user import User
 from app.api.dependencies import get_current_user
+from app.core import security
+from app.utils.email import send_verification_email
 
 router = APIRouter(
     prefix="/users",
@@ -23,7 +25,13 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         )
     
     # Llamamos al servicio para que lo encripte y lo guarde
-    return user_service.create_user(db=db, user=user)
+    new_user = user_service.create_user(db=db, user=user)
+    
+    # Generar token y enviar email
+    token = security.create_access_token(data={"sub": str(new_user.id), "type": "email_verification"})
+    send_verification_email(new_user.email, token)
+    
+    return new_user
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):

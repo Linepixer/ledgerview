@@ -9,8 +9,18 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [currency, setCurrency] = useState('USD')
   const [user, setUser] = useState(null)
+  const [verificationMessage, setVerificationMessage] = useState('')
 
   useEffect(() => {
+    // Check for email verification token in URL
+    const params = new URLSearchParams(window.location.search)
+    const tokenParams = params.get('token')
+    if (tokenParams) {
+      verifyEmail(tokenParams)
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
     const token = localStorage.getItem('token')
     if (token) {
       setIsAuthenticated(true)
@@ -24,6 +34,20 @@ function App() {
       setUser(res.data)
     } catch (err) {
       console.error("Error fetching user profile", err)
+    }
+  }
+
+  const verifyEmail = async (verificationToken) => {
+    try {
+      const res = await api.post(`/verify?token=${verificationToken}`)
+      setVerificationMessage('¡Cuenta verificada exitosamente!')
+      if (res.data.access_token) {
+        localStorage.setItem('token', res.data.access_token)
+        setIsAuthenticated(true)
+        fetchUser()
+      }
+    } catch (err) {
+      setVerificationMessage('El link de verificación es inválido o expiró.')
     }
   }
 
@@ -54,6 +78,13 @@ function App() {
       </header>
 
       <main>
+        {verificationMessage && (
+          <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
+             <div className={`badge ${verificationMessage.includes('exitosamente') ? 'badge-profit' : 'badge-loss'}`} style={{ display: 'block', padding: '1rem', textAlign: 'center', fontSize: '1rem' }}>
+               {verificationMessage}
+             </div>
+          </div>
+        )}
         {isAuthenticated ? <Dashboard currency={currency} /> : <Auth onLogin={() => {
           setIsAuthenticated(true)
           fetchUser()
