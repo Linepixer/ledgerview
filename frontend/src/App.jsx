@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import Auth from './components/Auth'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
 import AccountMenu from './components/AccountMenu'
 import api from './api'
 import './index.css'
@@ -10,14 +12,32 @@ function App() {
   const [currency, setCurrency] = useState('USD')
   const [user, setUser] = useState(null)
   const [verificationMessage, setVerificationMessage] = useState('')
+  const [currentPath, setCurrentPath] = useState(window.location.pathname)
 
   useEffect(() => {
-    // Check for email verification token in URL
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && (currentPath === '/reset-password' || currentPath === '/forgot-password' || currentPath === '/login')) {
+      window.history.replaceState({}, document.title, '/');
+      setCurrentPath('/');
+    }
+  }, [isAuthenticated, currentPath]);
+
+  useEffect(() => {
+    // Grab the email verification token from the URL if it's there
     const params = new URLSearchParams(window.location.search)
     const tokenParams = params.get('token')
-    if (tokenParams) {
+    
+    // Only try to verify if they landed on the root or were redirected to login
+    if (tokenParams && (window.location.pathname === '/' || window.location.pathname === '/login')) {
       verifyEmail(tokenParams)
-      // Clean URL
+      // Strip the token from the URL so it doesn't linger
       window.history.replaceState({}, document.title, window.location.pathname)
     }
 
@@ -59,12 +79,20 @@ function App() {
     setIsAuthenticated(false)
     setUser(null)
     window.history.replaceState({}, document.title, '/login')
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   return (
     <div className="app-container">
       <header>
-        <div className="logo-text" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div 
+          className="logo-text" 
+          onClick={() => {
+            window.history.pushState({}, '', '/');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+        >
           <img src="/logo.png" alt="LedgerView Logo" style={{ height: '32px' }} />
           LedgerView
         </div>
@@ -89,11 +117,28 @@ function App() {
              </div>
           </div>
         )}
-        {isAuthenticated ? <Dashboard currency={currency} /> : <Auth onLogin={() => {
-          setIsAuthenticated(true)
-          fetchUser()
-          window.history.replaceState({}, document.title, '/')
-        }} />}
+        {isAuthenticated ? <Dashboard currency={currency} /> : (
+          currentPath === '/forgot-password' ? (
+            <ForgotPassword onSwitchToLogin={() => {
+              window.history.pushState({}, '', '/login')
+              window.dispatchEvent(new PopStateEvent('popstate'))
+            }} />
+          ) : currentPath === '/reset-password' ? (
+            <ResetPassword onLogin={() => {
+              setIsAuthenticated(true)
+              fetchUser()
+              window.history.replaceState({}, document.title, '/')
+              window.dispatchEvent(new PopStateEvent('popstate'))
+            }} />
+          ) : (
+            <Auth onLogin={() => {
+              setIsAuthenticated(true)
+              fetchUser()
+              window.history.replaceState({}, document.title, '/')
+              window.dispatchEvent(new PopStateEvent('popstate'))
+            }} />
+          )
+        )}
       </main>
 
       {isAuthenticated && (

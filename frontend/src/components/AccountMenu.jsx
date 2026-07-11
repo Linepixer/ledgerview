@@ -20,13 +20,13 @@ export default function AccountMenu({ user, onLogout }) {
   return (
     <>
       <div style={{ position: 'relative' }} ref={menuRef}>
-        <button 
+        <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex-row"
-          style={{ 
-            background: 'transparent', 
-            border: '1px solid var(--border)', 
-            padding: '0.5rem 0.75rem', 
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            padding: '0.5rem 0.75rem',
             borderRadius: '4px',
             color: 'var(--text-main)',
             cursor: 'pointer',
@@ -74,7 +74,7 @@ export default function AccountMenu({ user, onLogout }) {
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               <KeyRound size={16} className="text-muted" />
-              Cambiar Contraseña
+              Cambiar contraseña
             </button>
             <button
               onClick={onLogout}
@@ -101,7 +101,7 @@ export default function AccountMenu({ user, onLogout }) {
       </div>
 
       {showPasswordModal && (
-        <ChangePasswordModal 
+        <ChangePasswordModal
           onClose={() => setShowPasswordModal(false)}
           onSuccess={() => {
             setShowPasswordModal(false);

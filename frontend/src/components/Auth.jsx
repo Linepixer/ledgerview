@@ -28,9 +28,10 @@ export default function Auth({ onLogin }) {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   useEffect(() => {
-    // If we land on root or an unknown route while unauthenticated, default to /login
+    // Force unauthenticated users into the login page if they wander off
     if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
-      window.history.replaceState({}, '', '/login');
+      const search = window.location.search;
+      window.history.replaceState({}, '', '/login' + search);
       setIsLogin(true);
     }
 
@@ -199,7 +200,21 @@ export default function Auth({ onLogin }) {
             />
           </div>
           <div>
-            <label className="summary-label">{t.passwordLabel}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="summary-label">{t.passwordLabel}</label>
+              {isLogin && (
+                <button 
+                  type="button"
+                  onClick={() => {
+                    window.history.pushState({}, '', '/forgot-password');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', fontStyle: 'italic', fontWeight: 500, padding: 0, textDecoration: 'none' }}
+                >
+                  {t.forgotPassword}
+                </button>
+              )}
+            </div>
             <div className="password-input-flex">
               <input 
                 type={showPassword ? 'text' : 'password'}

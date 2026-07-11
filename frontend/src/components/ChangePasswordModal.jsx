@@ -41,16 +41,16 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ margin: 0 }}>Cambiar Contraseña</h2>
+          <h2 style={{ margin: 0 }}>Cambiar contraseña</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
             <X size={24} />
           </button>
         </div>
-        
+
         <div style={{ padding: '1.5rem' }}>
           {error && (
             <div className="text-loss flex-row" style={{ marginBottom: '1rem' }}>
-              <AlertTriangle size={16} style={{ marginRight: '0.5rem' }}/> {error}
+              <AlertTriangle size={16} style={{ marginRight: '0.5rem' }} /> {error}
             </div>
           )}
 
@@ -63,17 +63,17 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
                 style={{
-                  padding: '0.75rem', 
-                  background: 'var(--bg-main)', 
-                  border: '1px solid var(--border)', 
-                  color: 'var(--text-main)', 
+                  padding: '0.75rem',
+                  background: 'var(--bg-main)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
                   borderRadius: '4px',
                   width: '100%',
                   marginTop: '0.5rem'
                 }}
               />
             </div>
-            
+
             <div>
               <label className="summary-label">Nueva Contraseña</label>
               <input
@@ -82,17 +82,17 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 style={{
-                  padding: '0.75rem', 
-                  background: 'var(--bg-main)', 
-                  border: '1px solid var(--border)', 
-                  color: 'var(--text-main)', 
+                  padding: '0.75rem',
+                  background: 'var(--bg-main)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
                   borderRadius: '4px',
                   width: '100%',
                   marginTop: '0.5rem'
                 }}
               />
             </div>
-            
+
             <div>
               <label className="summary-label">Confirmar Nueva Contraseña</label>
               <input
@@ -101,33 +101,33 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 style={{
-                  padding: '0.75rem', 
-                  background: 'var(--bg-main)', 
-                  border: '1px solid var(--border)', 
-                  color: 'var(--text-main)', 
+                  padding: '0.75rem',
+                  background: 'var(--bg-main)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
                   borderRadius: '4px',
                   width: '100%',
                   marginTop: '0.5rem'
                 }}
               />
             </div>
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               disabled={loading}
-              style={{ 
-                marginTop: '1rem', 
+              style={{
+                marginTop: '1rem',
                 width: '100%',
-                padding: '1rem', 
-                background: 'var(--accent)', 
-                color: 'var(--accent-text)', 
-                border: 'none', 
-                borderRadius: '4px', 
-                cursor: 'pointer', 
-                fontWeight: 'bold' 
+                padding: '1rem',
+                background: 'var(--accent)',
+                color: 'var(--accent-text)',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
               }}
             >
-              {loading ? 'Guardando...' : 'Cambiar Contraseña'}
+              {loading ? 'Guardando...' : 'Cambiar contraseña'}
             </button>
           </form>
         </div>
