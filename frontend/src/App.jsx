@@ -25,6 +25,9 @@ function App() {
     if (token) {
       setIsAuthenticated(true)
       fetchUser()
+      if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
+        window.history.replaceState({}, document.title, '/')
+      }
     }
   }, [])
 
@@ -55,6 +58,7 @@ function App() {
     localStorage.removeItem('token')
     setIsAuthenticated(false)
     setUser(null)
+    window.history.replaceState({}, document.title, '/login')
   }
 
   return (
@@ -88,6 +92,7 @@ function App() {
         {isAuthenticated ? <Dashboard currency={currency} /> : <Auth onLogin={() => {
           setIsAuthenticated(true)
           fetchUser()
+          window.history.replaceState({}, document.title, '/')
         }} />}
       </main>
 

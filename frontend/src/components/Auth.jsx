@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api';
 import es from '../locales/es.json';
 
 export default function Auth({ onLogin }) {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(() => {
+    return window.location.pathname !== '/signup';
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,6 +23,31 @@ export default function Auth({ onLogin }) {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  useEffect(() => {
+    // If we land on root or an unknown route while unauthenticated, default to /login
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+      window.history.replaceState({}, '', '/login');
+      setIsLogin(true);
+    }
+
+    const handlePopState = () => {
+      setIsLogin(window.location.pathname !== '/signup');
+      setError('');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const toggleMode = (loginMode) => {
+    setIsLogin(loginMode);
+    setError('');
+    const newPath = loginMode ? '/login' : '/signup';
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({}, '', newPath);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -202,7 +229,7 @@ export default function Auth({ onLogin }) {
           {isLogin ? `${t.noAccount} ` : `${t.hasAccount} `}
           <span 
             style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold' }}
-            onClick={() => { setIsLogin(!isLogin); setError(''); }}
+            onClick={() => toggleMode(!isLogin)}
           >
             {isLogin ? t.switchToRegister : t.switchToLogin}
           </span>
