@@ -8,8 +8,10 @@ def send_verification_email(to_email: str, token: str) -> None:
     Send an email verification link to the user.
     Uses SMTP if credentials are provided in .env, otherwise mocks the email via stdout.
     """
-    # Front-end URL
-    app_url = os.getenv("VITE_API_URL", "http://localhost:3000").replace("/api", "")
+    # Get the front-end URL from the environment (default to localhost for dev)
+    app_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    # Ensure no trailing slash
+    app_url = app_url.rstrip('/')
     verification_link = f"{app_url}/?token={token}"
 
     html_content = f"""
@@ -136,7 +138,10 @@ def send_password_reset_email(to_email: str, token: str) -> None:
     """
     Send a password reset link to the user.
     """
-    app_url = os.getenv("VITE_API_URL", "http://localhost:3000").replace("/api", "")
+    # Get the front-end URL from the environment (default to localhost for dev)
+    app_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    # Ensure no trailing slash
+    app_url = app_url.rstrip('/')
     reset_link = f"{app_url}/reset-password?token={token}"
 
     html_content = f"""
