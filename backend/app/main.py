@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api import users, auth, portfolio, transactions, assets
+from app.api import users, auth, portfolio, transactions, assets, admin
 from app.scheduler import start_scheduler, stop_scheduler
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.include_router(users.router)
 app.include_router(portfolio.router)
 app.include_router(transactions.router)
 app.include_router(assets.router)
+app.include_router(admin.router)
 
 @app.get("/")
 def root():

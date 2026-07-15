@@ -15,6 +15,11 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 365 * 100  # Effectively an infinite session
     
     ENV: str = os.getenv("ENV", "development")
+    
+    @property
+    def ADMIN_EMAILS(self) -> list[str]:
+        emails = os.getenv("ADMIN_EMAILS", "")
+        return [e.strip() for e in emails.split(",") if e.strip()]
 
 settings = Settings()
 

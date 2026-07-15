@@ -4,11 +4,13 @@ import Auth from './components/Auth'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
 import AccountMenu from './components/AccountMenu'
+import AdminDashboard from './components/AdminDashboard'
+import DeleteAccountConfirm from './components/DeleteAccountConfirm'
 import api from './api'
 import './index.css'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'))
   const [currency, setCurrency] = useState('USD')
   const [user, setUser] = useState(null)
   const [verificationMessage, setVerificationMessage] = useState('')
@@ -26,6 +28,12 @@ function App() {
     if (isAuthenticated && (currentPath === '/reset-password' || currentPath === '/forgot-password' || currentPath === '/login')) {
       window.history.replaceState({}, document.title, '/');
       setCurrentPath('/');
+    }
+    
+    // Protect admin routes only if we are absolutely sure they are not authenticated
+    if (!isAuthenticated && currentPath.startsWith('/admin') && !localStorage.getItem('token')) {
+      window.history.replaceState({}, document.title, '/login');
+      setCurrentPath('/login');
     }
   }, [isAuthenticated, currentPath]);
 
@@ -97,7 +105,7 @@ function App() {
           LedgerView
         </div>
         <div className="flex-row">
-          {isAuthenticated && (
+          {isAuthenticated && !currentPath.startsWith('/admin') && (
             <div className="currency-toggle" style={{ marginRight: '1rem' }}>
               <button className={`toggle-btn ${currency === 'ARS' ? 'active' : ''}`} onClick={() => setCurrency('ARS')}>ARS</button>
               <button className={`toggle-btn ${currency === 'USD' ? 'active' : ''}`} onClick={() => setCurrency('USD')}>USD</button>
@@ -117,7 +125,15 @@ function App() {
              </div>
           </div>
         )}
-        {isAuthenticated ? <Dashboard currency={currency} /> : (
+        {isAuthenticated ? (
+          currentPath === '/admin' ? (
+            <AdminDashboard user={user} />
+          ) : currentPath === '/admin/delete-account' ? (
+            <DeleteAccountConfirm user={user} />
+          ) : (
+            <Dashboard currency={currency} />
+          )
+        ) : (
           currentPath === '/forgot-password' ? (
             <ForgotPassword onSwitchToLogin={() => {
               window.history.pushState({}, '', '/login')

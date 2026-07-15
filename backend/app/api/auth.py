@@ -30,6 +30,12 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
         
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is disabled. Please contact support."
+        )
+        
     # Soft block unverified users so they can still request a new verification email
     if not user.is_verified:
         raise HTTPException(

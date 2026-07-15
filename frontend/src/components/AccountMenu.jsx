@@ -65,7 +65,7 @@ export default function AccountMenu({ user, onLogout }) {
                 padding: '0.75rem 1rem',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: '1px solid var(--border)',
+                borderBottom: user?.is_admin ? 'none' : '1px solid var(--border)',
                 color: 'var(--text-main)',
                 cursor: 'pointer',
                 textAlign: 'left'
@@ -76,6 +76,34 @@ export default function AccountMenu({ user, onLogout }) {
               <KeyRound size={16} className="text-muted" />
               Cambiar contraseña
             </button>
+            {user?.is_admin && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  window.history.pushState({}, '', '/admin');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid var(--border)',
+                  color: 'var(--accent)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-main)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <User size={16} />
+                Administrar la plataforma
+              </button>
+            )}
             <button
               onClick={onLogout}
               style={{
@@ -94,7 +122,7 @@ export default function AccountMenu({ user, onLogout }) {
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               <LogOut size={16} />
-              Cerrar Sesión
+              Cerrar sesión
             </button>
           </div>
         )}
