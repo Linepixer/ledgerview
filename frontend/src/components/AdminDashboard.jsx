@@ -162,7 +162,10 @@ export default function AdminDashboard({ user }) {
 
                         {/* Minimal Trash Button */}
                         <button
-                          onClick={() => setConfirmDelete(u)}
+                          onClick={() => {
+                            setDeleteMessage('');
+                            setConfirmDelete(u);
+                          }}
                           disabled={u.is_admin}
                           title="Borrar cuenta"
                           style={{
