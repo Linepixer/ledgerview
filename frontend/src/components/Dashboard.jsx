@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark, Upload } from 'lucide-react';
 import { AreaChart, Area, YAxis } from 'recharts';
 import api from '../api';
 import TransactionForm from './TransactionForm';
@@ -9,6 +9,7 @@ import PortfolioChart from './PortfolioChart';
 import AssetDetailView from './AssetDetailView';
 import PortfolioAssetDetailView from './PortfolioAssetDetailView';
 import CategoryProgressBars from './CategoryProgressBars';
+import ImportTransactions from './ImportTransactions';
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat('es-AR', {
@@ -22,18 +23,18 @@ const formatCurrency = (value, currency) => {
 const formatQuantity = (value, ticker) => {
   const isFiat = ['USD', 'ARS', 'EUR'].includes(ticker);
   const isCrypto = ['BTC', 'ETH', 'USDT', 'USDC', 'XRP', 'BNB', 'ADA', 'SOL'].includes(ticker);
-  
+
   if (isFiat) {
     if (value % 1 === 0) {
       return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
     }
     return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
   }
-  
+
   if (isCrypto) {
     return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
   }
-  
+
   // Equities / ETFs
   return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
 };
@@ -156,6 +157,7 @@ export default function Dashboard({ currency }) {
   // Valid tabs: 'portfolio', 'transactions', 'cotizaciones', 'cotizacion_detalle', 'portfolio_asset_detalle'
   const [activeTab, setActiveTab] = useState('portfolio');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
 
@@ -165,9 +167,13 @@ export default function Dashboard({ currency }) {
       const path = window.location.pathname;
       let initialTab = 'portfolio';
       let initialAsset = null;
+      let initialImporting = false;
 
       if (path.startsWith('/market')) initialTab = 'cotizaciones';
-      else if (path.startsWith('/transactions')) initialTab = 'transactions';
+      else if (path.startsWith('/transactions')) {
+        initialTab = 'transactions';
+        if (path === '/transactions/import') initialImporting = true;
+      }
       else if (path.startsWith('/asset/')) {
         initialTab = 'cotizacion_detalle';
         const ticker = path.split('/')[2];
@@ -188,15 +194,17 @@ export default function Dashboard({ currency }) {
 
       setActiveTab(initialTab);
       setSelectedAsset(initialAsset);
+      setIsImporting(initialImporting);
 
       const p = path === '/' ? '/portfolio' : path;
-      window.history.replaceState({ tab: initialTab, asset: initialAsset }, '', p);
+      window.history.replaceState({ tab: initialTab, asset: initialAsset, isImporting: initialImporting }, '', p);
     };
 
     const handlePopState = (event) => {
       if (event.state) {
         setActiveTab(event.state.tab || 'portfolio');
         setSelectedAsset(event.state.asset || null);
+        setIsImporting(event.state.isImporting || false);
       } else {
         checkPath();
       }
@@ -212,19 +220,22 @@ export default function Dashboard({ currency }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigateTo = (tab, asset = null) => {
-    if (activeTab === tab && selectedAsset?.ticker === asset?.ticker) return;
+  const navigateTo = (tab, asset = null, importing = false) => {
+    if (activeTab === tab && selectedAsset?.ticker === asset?.ticker && isImporting === importing) return;
     setActiveTab(tab);
     setSelectedAsset(asset);
+    setIsImporting(importing);
 
     let path = `/${tab}`;
     if (tab === 'portfolio') path = '/portfolio';
     if (tab === 'cotizaciones') path = '/market';
-    if (tab === 'transactions') path = '/transactions';
+    if (tab === 'transactions') {
+      path = importing ? '/transactions/import' : '/transactions';
+    }
     if (tab === 'cotizacion_detalle' && asset) path = `/asset/${asset.ticker}`;
     if (tab === 'portfolio_asset_detalle' && asset) path = `/portfolio/possession/${asset.ticker}`;
 
-    window.history.pushState({ tab, asset }, '', path);
+    window.history.pushState({ tab, asset, isImporting: importing }, '', path);
   };
 
   const fetchData = async () => {
@@ -571,13 +582,30 @@ export default function Dashboard({ currency }) {
       )}
 
       {activeTab === 'transactions' && (
-        <TransactionsList currency={currency} onTransactionDeleted={fetchData} refreshTrigger={refreshTransactions} />
+        isImporting ? (
+          <ImportTransactions
+            onCancel={() => navigateTo('transactions', null, false)}
+            onImportSuccess={(count) => {
+              navigateTo('transactions', null, false);
+              handleTransactionAdded();
+            }}
+            assets={allAssets}
+          />
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <button className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Upload size={18} /> Importar CSV
+              </button>
+            </div>
+            <TransactionsList currency={currency} onTransactionDeleted={fetchData} refreshTrigger={refreshTransactions} />
+          </>
+        )
       )}
 
-      {/* Floating Action Button (only visible on main tabs) */}
-      {(activeTab !== 'cotizacion_detalle' && activeTab !== 'portfolio_asset_detalle') && (
+      {(activeTab !== 'cotizacion_detalle' && activeTab !== 'portfolio_asset_detalle' && !isImporting) && (
         <button className="fab" onClick={() => setIsModalOpen(true)}>
-          <Plus size={28} />
+          <Plus size={24} />
         </button>
       )}
 
@@ -585,7 +613,7 @@ export default function Dashboard({ currency }) {
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-              <h2 style={{ margin: 0 }}>Nueva Transacción</h2>
+              <h2 style={{ margin: 0 }}>Nueva transacción</h2>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 <X size={24} />
               </button>

@@ -1,0 +1,4 @@
+Fecha,Activo,Tipo,Cantidad,Precio unitario,Divisa operada,Plataforma
+01/07/2026 14:30,SPY,Compra,10,500.50,USD,BullMarket
+02/07/2026 10:15,QQQ,Venta,50,4500,ARS,Balanz
+03/07/2026 09:00,BTC,Compra,0.05,62000,USD,Binance
