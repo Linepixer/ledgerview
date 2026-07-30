@@ -98,7 +98,7 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
             op_cur = "USD"
         
         asset_obj = asset_map.get(t.asset_id)
-        is_stablecoin = asset_obj and asset_obj.ticker in ["USD", "USDT", "USDC", "DAI"]
+        is_stablecoin = asset_obj and asset_obj.ticker.strip().upper() in ["USD", "USDT", "USDC", "DAI"]
         
         # Calculate value of this transaction in both currencies
         if op_cur == "ARS":
@@ -199,7 +199,7 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
             op_cur = "USD"
         
         asset_obj = asset_map.get(t.asset_id)
-        is_stablecoin = asset_obj and asset_obj.ticker in ["USD", "USDT", "USDC", "DAI"]
+        is_stablecoin = asset_obj and asset_obj.ticker.strip().upper() in ["USD", "USDT", "USDC", "DAI"]
 
         if op_cur == "ARS":
             val_ars = qty * price
