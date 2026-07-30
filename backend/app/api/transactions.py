@@ -91,7 +91,7 @@ def create_bulk_transactions(
         exchange_rate = tx_in.exchange_rate
         if not exchange_rate and tx_in.timestamp:
             closest_rate = db.query(ExchangeRateHistory).filter(
-                ExchangeRateHistory.rate_type == "cripto",
+                ExchangeRateHistory.rate_type == "historico",
                 ExchangeRateHistory.timestamp <= tx_in.timestamp
             ).order_by(desc(ExchangeRateHistory.timestamp)).first()
             
@@ -99,7 +99,7 @@ def create_bulk_transactions(
                 exchange_rate = closest_rate.rate_value
             else:
                 earliest_rate = db.query(ExchangeRateHistory).filter(
-                    ExchangeRateHistory.rate_type == "cripto"
+                    ExchangeRateHistory.rate_type == "historico"
                 ).order_by(ExchangeRateHistory.timestamp).first()
                 exchange_rate = earliest_rate.rate_value if earliest_rate else 1
         

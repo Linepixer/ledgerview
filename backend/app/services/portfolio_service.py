@@ -12,6 +12,64 @@ from app.services.price_fetcher import PriceFetcher
 
 logger = logging.getLogger(__name__)
 
+def _calculate_xirr(cash_flows: List[tuple]) -> float:
+    """
+    Calculates the Internal Rate of Return (XIRR) for a series of cash flows.
+    cash_flows: List of tuples (date, amount)
+    Returns the annualized rate as a percentage (e.g. 12.4 for 12.4%).
+    """
+    if not cash_flows:
+        return 0.0
+        
+    flows = sorted(cash_flows, key=lambda x: x[0])
+    
+    has_pos = any(f[1] > 0 for f in flows)
+    has_neg = any(f[1] < 0 for f in flows)
+    if not (has_pos and has_neg):
+        return 0.0
+        
+    t0 = flows[0][0]
+    if (flows[-1][0] - t0).days < 1:
+        return 0.0
+
+    def f(r):
+        val = 0.0
+        for date, amount in flows:
+            days = (date - t0).days
+            if 1.0 + r <= 0:
+                return float('inf') if amount < 0 else float('-inf')
+            val += amount / ((1.0 + r) ** (days / 365.0))
+        return val
+
+    low = -0.999
+    high = 100.0
+    
+    f_low = f(low)
+    f_high = f(high)
+    
+    if f_low * f_high > 0:
+        for _ in range(10):
+            high *= 2.0
+            f_high = f(high)
+            if f_low * f_high <= 0:
+                break
+        else:
+            return 0.0
+            
+    for _ in range(100):
+        mid = (low + high) / 2.0
+        f_mid = f(mid)
+        if abs(f_mid) < 1e-6:
+            return mid * 100.0
+        if f_low * f_mid < 0:
+            high = mid
+            f_high = f_mid
+        else:
+            low = mid
+            f_low = f_mid
+            
+    return ((low + high) / 2.0) * 100.0
+
 def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
     rates = PriceFetcher.get_dollar_rates()
     current_usd_to_ars = rates.get("cripto") or rates.get("blue") or rates.get("bolsa") or 1500.0
@@ -33,12 +91,19 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
         qty = float(t.quantity)
         price = float(t.price_per_unit)
         ex_rate = float(t.exchange_rate) if t.exchange_rate else current_usd_to_ars
-        op_cur = t.operated_currency.upper() if t.operated_currency else "USD"
+        op_cur = t.operated_currency.upper().strip() if t.operated_currency else "USD"
+        if "AR" in op_cur:
+            op_cur = "ARS"
+        elif "US" in op_cur:
+            op_cur = "USD"
+        
+        asset_obj = asset_map.get(t.asset_id)
+        is_stablecoin = asset_obj and asset_obj.ticker in ["USD", "USDT", "USDC", "DAI"]
         
         # Calculate value of this transaction in both currencies
         if op_cur == "ARS":
             val_ars = qty * price
-            val_usd = val_ars / ex_rate if ex_rate else 0
+            val_usd = qty if is_stablecoin else (val_ars / ex_rate if ex_rate else 0)
         else:
             val_usd = qty * price
             val_ars = val_usd * ex_rate
@@ -117,11 +182,60 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
         if total_portfolio_usd > 0:
             pa.portfolio_percentage = (pa.total_value_usd / total_portfolio_usd) * 100
             
+    # Calculate XIRR
+    from datetime import datetime
+    
+    usd_flows = []
+    ars_flows = []
+    
+    for t in transactions:
+        qty = float(t.quantity)
+        price = float(t.price_per_unit)
+        ex_rate = float(t.exchange_rate) if t.exchange_rate else current_usd_to_ars
+        op_cur = t.operated_currency.upper().strip() if t.operated_currency else "USD"
+        if "AR" in op_cur:
+            op_cur = "ARS"
+        elif "US" in op_cur:
+            op_cur = "USD"
+        
+        asset_obj = asset_map.get(t.asset_id)
+        is_stablecoin = asset_obj and asset_obj.ticker in ["USD", "USDT", "USDC", "DAI"]
+
+        if op_cur == "ARS":
+            val_ars = qty * price
+            val_usd = qty if is_stablecoin else (val_ars / ex_rate if ex_rate else 0.0)
+        else:
+            val_usd = qty * price
+            val_ars = val_usd * ex_rate
+            
+        t_type = t.type.lower()
+        if t_type in ["compra", "comisión", "comision"]:
+            flow_usd = -val_usd
+            flow_ars = -val_ars
+        elif t_type in ["venta", "intereses"]:
+            flow_usd = val_usd
+            flow_ars = val_ars
+        else:
+            continue
+            
+        t_date = t.timestamp.date() if hasattr(t.timestamp, 'date') else t.timestamp
+        usd_flows.append((t_date, flow_usd))
+        ars_flows.append((t_date, flow_ars))
+        
+    today = datetime.now().date()
+    usd_flows.append((today, total_portfolio_usd))
+    ars_flows.append((today, total_portfolio_ars))
+    
+    xirr_usd = _calculate_xirr(usd_flows)
+    xirr_ars = _calculate_xirr(ars_flows)
+    
     return PortfolioSummary(
         assets=portfolio_assets,
         total_value_ars=total_portfolio_ars,
         total_value_usd=total_portfolio_usd,
-        exchange_rates=rates
+        exchange_rates=rates,
+        xirr_usd=xirr_usd,
+        xirr_ars=xirr_ars
     )
 
 from datetime import datetime, timedelta

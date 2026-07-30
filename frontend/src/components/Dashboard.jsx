@@ -300,6 +300,7 @@ export default function Dashboard({ currency }) {
 
   const isArs = currency === 'ARS';
   const totalValue = isArs ? portfolio.total_value_ars : portfolio.total_value_usd;
+  const xirr = isArs ? (portfolio.xirr_ars || 0) : (portfolio.xirr_usd || 0);
 
   const totalProfit = portfolio.assets.reduce((acc, asset) => acc + (isArs ? asset.potential_profit_ars : asset.potential_profit_usd), 0);
   const totalAvgCost = portfolio.assets.reduce((acc, asset) => acc + ((isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd) * asset.quantity), 0);
@@ -381,6 +382,16 @@ export default function Dashboard({ currency }) {
           </div>
 
           <div className="summary-cards">
+            <div className="card">
+              <div className="summary-label">Rendimiento (XIRR)</div>
+              <div className="summary-value" style={{ fontSize: '1.5rem', color: xirr >= 0 ? 'var(--profit)' : 'var(--loss)' }}>
+                {xirr >= 0 ? '↗ ' : '↘ '}
+                {Math.abs(xirr).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                {isArs ? 'Tasa nominal en pesos' : 'Ref: Inflación USD ~3%'}
+              </div>
+            </div>
             <div className="card">
               <div className="summary-label">Dólar Bolsa</div>
               <div className="summary-value" style={{ fontSize: '1.5rem' }}>

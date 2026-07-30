@@ -27,6 +27,8 @@ class PortfolioSummary(BaseModel):
     total_value_ars: float
     total_value_usd: float
     exchange_rates: Dict[str, Optional[float]]
+    xirr_usd: float = 0.0
+    xirr_ars: float = 0.0
 
 class PortfolioHistoryPoint(BaseModel):
     date: str

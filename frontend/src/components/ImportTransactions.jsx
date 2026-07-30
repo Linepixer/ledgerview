@@ -114,8 +114,24 @@ export default function ImportTransactions({ onImportSuccess, onCancel, assets =
 
         const tickerRaw = getValue("Activo").toUpperCase();
 
-        if (!tickerRaw || !getValue("Tipo") || !getValue("Divisa operada")) {
+        const tipoRaw = getValue("Tipo").trim().toLowerCase();
+        if (!tickerRaw || !tipoRaw || !getValue("Divisa operada")) {
           setError(`Faltan campos obligatorios (Activo, Tipo o Divisa) en la fila ${i + 1}.`);
+          return;
+        }
+
+        const typeNormalized = tipoRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        let finalType = "";
+        if (typeNormalized === "compra") {
+          finalType = "Compra";
+        } else if (typeNormalized === "venta") {
+          finalType = "Venta";
+        } else if (typeNormalized === "intereses" || typeNormalized === "interes") {
+          finalType = "Intereses";
+        } else if (typeNormalized === "comision") {
+          finalType = "Comisión";
+        } else {
+          setError(`Tipo de operación inválido en la fila ${i + 1} ("${getValue("Tipo")}"). Debe ser Compra, Venta, Intereses o Comisión.`);
           return;
         }
 
@@ -150,7 +166,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, assets =
         parsedData.push({
           timestamp: timestamp,
           ticker: tickerRaw,
-          type: getValue("Tipo"),
+          type: finalType,
           quantity: qtyRaw,
           price_per_unit: priceRaw,
           total_value: qtyRaw * priceRaw,
@@ -285,7 +301,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, assets =
                       name: "Tipo",
                       desc: "Tipo de operación realizada.",
                       format: "Tipos de operación aceptados:",
-                      badges: ["Compra", "Venta"]
+                      badges: ["Compra", "Venta", "Intereses", "Comisión"]
                     },
                     {
                       name: "Cantidad",
