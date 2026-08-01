@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Float
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
 
@@ -11,3 +11,4 @@ class Asset(Base):
     name = Column(String(255), nullable=False)
     type = Column(String(50), nullable=False)
     currency = Column(String(10), nullable=False)
+    current_ratio = Column(Float, nullable=True, default=1.0)

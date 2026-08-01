@@ -370,3 +370,38 @@ input:focus, select:focus, textarea:focus {
   border-radius: 0 !important;
   margin-top: 0 !important;
 }
+
+/* Tooltip */
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  width: 280px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: none;
+  line-height: 1.4;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.tooltip-container:hover .tooltip-content {
+  opacity: 1;
+}

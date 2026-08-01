@@ -215,3 +215,8 @@ Thumbs.db
 
 # Production and test env files
 .env*
+
+
+
+# Datos privados locales
+private/

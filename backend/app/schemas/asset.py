@@ -7,6 +7,7 @@ class AssetBase(BaseModel):
     name: str
     type: str
     currency: str
+    current_ratio: float | None = 1.0
 
 class AssetCreate(AssetBase):
     pass

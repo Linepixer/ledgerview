@@ -30,6 +30,7 @@ def get_assets(db: Session = Depends(get_db)):
             name=asset.name,
             type=asset.type,
             currency=asset.currency,
+            current_ratio=asset.current_ratio,
             current_price_usd=price_usd,
             current_price_ars=price_ars
         ))

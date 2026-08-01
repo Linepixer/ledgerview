@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserX, UserCheck, Trash2, Shield, AlertTriangle } from 'lucide-react';
 import api from '../api';
+import CorporateEventsManager from './CorporateEventsManager';
 
 export default function AdminDashboard({ user }) {
   const [users, setUsers] = useState([]);
@@ -71,7 +72,9 @@ export default function AdminDashboard({ user }) {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
+      <CorporateEventsManager />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', marginTop: '40px' }}>
         <Shield size={32} color="var(--accent)" />
         <h1 style={{ margin: 0 }}>Administración de cuentas</h1>
       </div>

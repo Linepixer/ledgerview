@@ -7,6 +7,7 @@ from uuid import UUID
 
 from app.models.transaction import Transaction
 from app.models.asset import Asset
+from app.models.corporate_event import CorporateEvent
 from app.schemas.portfolio import PortfolioAsset, PortfolioSummary
 from app.services.price_fetcher import PriceFetcher
 
@@ -87,9 +88,29 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
         "quantity_bought": 0.0
     })
     
+    # Load all corporate events (splits)
+    corporate_events = db.query(CorporateEvent).all()
+    splits_by_asset = defaultdict(list)
+    for event in corporate_events:
+        if event.type.lower() == "split":
+            splits_by_asset[event.asset_id].append(event)
+    
     for t in transactions:
         qty = float(t.quantity)
         price = float(t.price_per_unit)
+        
+        # Apply Point-in-Time splits
+        effective_ratio = 1.0
+        asset_splits = splits_by_asset.get(t.asset_id, [])
+        for split in asset_splits:
+            # If the split happened AFTER this transaction, the transaction quantity needs to be adjusted
+            if split.timestamp > t.timestamp:
+                effective_ratio *= float(split.ratio)
+                
+        qty *= effective_ratio
+        if effective_ratio > 0:
+            price /= effective_ratio
+            
         ex_rate = float(t.exchange_rate) if t.exchange_rate else current_usd_to_ars
         op_cur = t.operated_currency.upper().strip() if t.operated_currency else "USD"
         if "AR" in op_cur:
@@ -249,6 +270,12 @@ def get_portfolio_history(db: Session, user_id: UUID) -> PortfolioHistoryRespons
         
     prices = db.query(AssetPrice).order_by(AssetPrice.timestamp).all()
     
+    # Load corporate events
+    corporate_events = db.query(CorporateEvent).filter(CorporateEvent.type == "split").all()
+    daily_splits = defaultdict(list)
+    for event in corporate_events:
+        daily_splits[event.timestamp.date()].append(event)
+    
     # We will compute daily values from the first transaction to today
     start_date = transactions[0].timestamp.date()
     end_date = datetime.now().date()
@@ -273,7 +300,12 @@ def get_portfolio_history(db: Session, user_id: UUID) -> PortfolioHistoryRespons
     
     current_date = start_date
     while current_date <= end_date:
-        # Apply transactions for this date
+        # 1. Apply splits for this date FIRST (assuming splits take effect at start of day)
+        for split in daily_splits.get(current_date, []):
+            if current_balances[split.asset_id] != 0:
+                current_balances[split.asset_id] *= float(split.ratio)
+                
+        # 2. Apply transactions for this date
         for t in daily_txs.get(current_date, []):
             qty = float(t.quantity)
             if t.type.lower() in ["compra", "intereses"]:
@@ -329,6 +361,15 @@ def get_portfolio_asset_history(db: Session, user_id: UUID, ticker: str) -> Port
         
     prices = db.query(AssetPrice).filter(AssetPrice.asset_id == asset.id).order_by(AssetPrice.timestamp).all()
     
+    # Load corporate events for this asset
+    corporate_events = db.query(CorporateEvent).filter(
+        CorporateEvent.asset_id == asset.id,
+        CorporateEvent.type == "split"
+    ).all()
+    daily_splits = defaultdict(list)
+    for event in corporate_events:
+        daily_splits[event.timestamp.date()].append(event)
+    
     # We will compute daily values from the first transaction to today
     start_date = transactions[0].timestamp.date()
     end_date = datetime.now().date()
@@ -353,7 +394,12 @@ def get_portfolio_asset_history(db: Session, user_id: UUID, ticker: str) -> Port
     
     current_date = start_date
     while current_date <= end_date:
-        # Apply transactions for this date
+        # 1. Apply splits for this date FIRST
+        for split in daily_splits.get(current_date, []):
+            if current_balances[split.asset_id] != 0:
+                current_balances[split.asset_id] *= float(split.ratio)
+                
+        # 2. Apply transactions for this date
         for t in daily_txs.get(current_date, []):
             qty = float(t.quantity)
             if t.type.lower() in ["compra", "intereses"]:
