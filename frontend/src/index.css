@@ -405,3 +405,16 @@ input:focus, select:focus, textarea:focus {
 .tooltip-container:hover .tooltip-content {
   opacity: 1;
 }
+
+/* Responsive Fixes */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 80px; /* Space for FAB on mobile */
+  }
+}
