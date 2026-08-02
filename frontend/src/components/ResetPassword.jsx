@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import es from '../locales/es.json';
 
 export default function ResetPassword({ onLogin }) {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +58,7 @@ export default function ResetPassword({ onLogin }) {
       if (res.data.access_token) {
         localStorage.setItem('token', res.data.access_token);
         // Clean up the URL so the token doesn't stay in the browser history
-        window.history.replaceState({}, document.title, "/");
+        navigate('/', { replace: true });
         onLogin();
       }
     } catch (err) {

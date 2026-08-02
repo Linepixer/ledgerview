@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Auth from './components/Auth'
 import ForgotPassword from './components/ForgotPassword'
@@ -14,50 +15,32 @@ function App() {
   const [currency, setCurrency] = useState('USD')
   const [user, setUser] = useState(null)
   const [verificationMessage, setVerificationMessage] = useState('')
-  const [currentPath, setCurrentPath] = useState(window.location.pathname)
-
-  useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname);
-    };
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && (currentPath === '/reset-password' || currentPath === '/forgot-password' || currentPath === '/login')) {
-      window.history.replaceState({}, document.title, '/');
-      setCurrentPath('/');
-    }
-    
-    // Protect admin routes only if we are absolutely sure they are not authenticated
-    if (!isAuthenticated && currentPath.startsWith('/admin') && !localStorage.getItem('token')) {
-      window.history.replaceState({}, document.title, '/login');
-      setCurrentPath('/login');
-    }
-  }, [isAuthenticated, currentPath]);
+  
+  const navigate = useNavigate()
+  const location = useLocation()
+  const currentPath = location.pathname
 
   useEffect(() => {
     // Grab the email verification token from the URL if it's there
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(location.search)
     const tokenParams = params.get('token')
     
     // Only try to verify if they landed on the root or were redirected to login
-    if (tokenParams && (window.location.pathname === '/' || window.location.pathname === '/login')) {
+    if (tokenParams && (currentPath === '/' || currentPath === '/login')) {
       verifyEmail(tokenParams)
       // Strip the token from the URL so it doesn't linger
-      window.history.replaceState({}, document.title, window.location.pathname)
+      navigate(currentPath, { replace: true })
     }
 
     const token = localStorage.getItem('token')
     if (token) {
       setIsAuthenticated(true)
       fetchUser()
-      if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
-        window.history.replaceState({}, document.title, '/')
+      if (currentPath === '/login' || currentPath === '/signup') {
+        navigate('/', { replace: true })
       }
     }
-  }, [])
+  }, []) // Empty dependency array is intentional for initial load
 
   const fetchUser = async () => {
     try {
@@ -86,8 +69,13 @@ function App() {
     localStorage.removeItem('token')
     setIsAuthenticated(false)
     setUser(null)
-    window.history.replaceState({}, document.title, '/login')
-    window.dispatchEvent(new PopStateEvent('popstate'))
+    navigate('/login', { replace: true })
+  }
+
+  const onLoginSuccess = () => {
+    setIsAuthenticated(true)
+    fetchUser()
+    navigate('/', { replace: true })
   }
 
   return (
@@ -95,10 +83,7 @@ function App() {
       <header>
         <div 
           className="logo-text" 
-          onClick={() => {
-            window.history.pushState({}, '', '/');
-            window.dispatchEvent(new PopStateEvent('popstate'));
-          }}
+          onClick={() => navigate('/')}
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
         >
           <img src="/logo.png" alt="LedgerView Logo" style={{ height: '32px' }} />
@@ -125,36 +110,35 @@ function App() {
              </div>
           </div>
         )}
-        {isAuthenticated ? (
-          currentPath === '/admin' ? (
-            <AdminDashboard user={user} />
-          ) : currentPath === '/admin/delete-account' ? (
-            <DeleteAccountConfirm user={user} />
+        
+        <Routes>
+          {isAuthenticated ? (
+            <>
+              <Route path="/admin" element={<AdminDashboard user={user} />} />
+              <Route path="/admin/delete-account" element={<DeleteAccountConfirm user={user} />} />
+              
+              <Route path="/" element={<Dashboard currency={currency} />} />
+              <Route path="/portfolio" element={<Dashboard currency={currency} />} />
+              <Route path="/portfolio/possession/:ticker" element={<Dashboard currency={currency} />} />
+              
+              <Route path="/market" element={<Dashboard currency={currency} />} />
+              <Route path="/asset/:ticker" element={<Dashboard currency={currency} />} />
+              
+              <Route path="/transactions" element={<Dashboard currency={currency} />} />
+              <Route path="/transactions/import" element={<Dashboard currency={currency} />} />
+              
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
           ) : (
-            <Dashboard currency={currency} />
-          )
-        ) : (
-          currentPath === '/forgot-password' ? (
-            <ForgotPassword onSwitchToLogin={() => {
-              window.history.pushState({}, '', '/login')
-              window.dispatchEvent(new PopStateEvent('popstate'))
-            }} />
-          ) : currentPath === '/reset-password' ? (
-            <ResetPassword onLogin={() => {
-              setIsAuthenticated(true)
-              fetchUser()
-              window.history.replaceState({}, document.title, '/')
-              window.dispatchEvent(new PopStateEvent('popstate'))
-            }} />
-          ) : (
-            <Auth onLogin={() => {
-              setIsAuthenticated(true)
-              fetchUser()
-              window.history.replaceState({}, document.title, '/')
-              window.dispatchEvent(new PopStateEvent('popstate'))
-            }} />
-          )
-        )}
+            <>
+              <Route path="/login" element={<Auth onLogin={onLoginSuccess} />} />
+              <Route path="/signup" element={<Auth onLogin={onLoginSuccess} />} />
+              <Route path="/forgot-password" element={<ForgotPassword onSwitchToLogin={() => navigate('/login')} />} />
+              <Route path="/reset-password" element={<ResetPassword onLogin={onLoginSuccess} />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          )}
+        </Routes>
       </main>
 
       {isAuthenticated && (

@@ -11,6 +11,7 @@ import PortfolioAssetDetailView from './PortfolioAssetDetailView';
 import CategoryProgressBars from './CategoryProgressBars';
 import ImportTransactions from './ImportTransactions';
 import XirrCard from './XirrCard';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat('es-AR', {
@@ -163,10 +164,13 @@ export default function Dashboard({ currency }) {
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // Browser history synchronization
   useEffect(() => {
     const checkPath = () => {
-      const path = window.location.pathname;
+      const path = location.pathname;
       let initialTab = 'portfolio';
       let initialAsset = null;
       let initialImporting = false;
@@ -179,16 +183,16 @@ export default function Dashboard({ currency }) {
       else if (path.startsWith('/asset/')) {
         initialTab = 'cotizacion_detalle';
         const ticker = path.split('/')[2];
-        if (window.history.state?.asset?.ticker === ticker) {
-          initialAsset = window.history.state.asset;
+        if (location.state?.asset?.ticker === ticker) {
+          initialAsset = location.state.asset;
         } else {
           initialAsset = { ticker: ticker, name: '' };
         }
       } else if (path.startsWith('/portfolio/possession/')) {
         initialTab = 'portfolio_asset_detalle';
         const ticker = path.split('/')[3];
-        if (window.history.state?.asset?.ticker === ticker) {
-          initialAsset = window.history.state.asset;
+        if (location.state?.asset?.ticker === ticker) {
+          initialAsset = location.state.asset;
         } else {
           initialAsset = { ticker: ticker, name: '' };
         }
@@ -197,34 +201,13 @@ export default function Dashboard({ currency }) {
       setActiveTab(initialTab);
       setSelectedAsset(initialAsset);
       setIsImporting(initialImporting);
-
-      const p = path === '/' ? '/portfolio' : path;
-      window.history.replaceState({ tab: initialTab, asset: initialAsset, isImporting: initialImporting }, '', p);
     };
 
-    const handlePopState = (event) => {
-      if (event.state) {
-        setActiveTab(event.state.tab || 'portfolio');
-        setSelectedAsset(event.state.asset || null);
-        setIsImporting(event.state.isImporting || false);
-      } else {
-        checkPath();
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    // Initialize base state if entering directly via URL or F5
     checkPath();
-
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [location.pathname, location.state]);
 
   const navigateTo = (tab, asset = null, importing = false) => {
     if (activeTab === tab && selectedAsset?.ticker === asset?.ticker && isImporting === importing) return;
-    setActiveTab(tab);
-    setSelectedAsset(asset);
-    setIsImporting(importing);
 
     let path = `/${tab}`;
     if (tab === 'portfolio') path = '/portfolio';
@@ -235,7 +218,7 @@ export default function Dashboard({ currency }) {
     if (tab === 'cotizacion_detalle' && asset) path = `/asset/${asset.ticker}`;
     if (tab === 'portfolio_asset_detalle' && asset) path = `/portfolio/possession/${asset.ticker}`;
 
-    window.history.pushState({ tab, asset, isImporting: importing }, '', path);
+    navigate(path, { state: { tab, asset, isImporting: importing } });
   };
 
   const fetchData = async () => {
@@ -665,8 +648,8 @@ export default function Dashboard({ currency }) {
           asset={selectedAsset}
           currency={currency}
           onBack={() => {
-            if (window.history.state && window.history.state.tab === 'cotizacion_detalle') {
-              window.history.back();
+            if (location.state && location.state.tab === 'cotizacion_detalle') {
+              navigate(-1);
             } else {
               const prevTab = selectedAsset.total_value_usd !== undefined ? 'portfolio' : 'cotizaciones';
               navigateTo(prevTab);
@@ -680,8 +663,8 @@ export default function Dashboard({ currency }) {
           asset={selectedAsset}
           currency={currency}
           onBack={() => {
-            if (window.history.state && window.history.state.tab === 'portfolio_asset_detalle') {
-              window.history.back();
+            if (location.state && location.state.tab === 'portfolio_asset_detalle') {
+              navigate(-1);
             } else {
               navigateTo('portfolio');
             }

@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { User, LogOut, KeyRound, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ChangePasswordModal from './ChangePasswordModal';
 
 export default function AccountMenu({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,8 +82,7 @@ export default function AccountMenu({ user, onLogout }) {
               <button
                 onClick={() => {
                   setIsOpen(false);
-                  window.history.pushState({}, '', '/admin');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
+                  navigate('/admin');
                 }}
                 style={{
                   display: 'flex',

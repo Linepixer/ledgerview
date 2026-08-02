@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import es from '../locales/es.json';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function Auth({ onLogin }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isLogin, setIsLogin] = useState(() => {
-    return window.location.pathname !== '/signup';
+    return location.pathname !== '/signup';
   });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,27 +33,22 @@ export default function Auth({ onLogin }) {
 
   useEffect(() => {
     // Force unauthenticated users into the login page if they wander off
-    if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
-      const search = window.location.search;
-      window.history.replaceState({}, '', '/login' + search);
+    if (location.pathname !== '/login' && location.pathname !== '/signup') {
+      const search = location.search;
+      navigate('/login' + search, { replace: true });
       setIsLogin(true);
-    }
-
-    const handlePopState = () => {
-      setIsLogin(window.location.pathname !== '/signup');
+    } else {
+      setIsLogin(location.pathname !== '/signup');
       setError('');
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    }
+  }, [location.pathname, location.search, navigate]);
 
   const toggleMode = (loginMode) => {
     setIsLogin(loginMode);
     setError('');
     const newPath = loginMode ? '/login' : '/signup';
-    if (window.location.pathname !== newPath) {
-      window.history.pushState({}, '', newPath);
+    if (location.pathname !== newPath) {
+      navigate(newPath);
     }
   };
 
@@ -206,8 +205,7 @@ export default function Auth({ onLogin }) {
                 <button 
                   type="button"
                   onClick={() => {
-                    window.history.pushState({}, '', '/forgot-password');
-                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    navigate('/forgot-password');
                   }}
                   style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', fontStyle: 'italic', fontWeight: 500, padding: 0, textDecoration: 'none' }}
                 >

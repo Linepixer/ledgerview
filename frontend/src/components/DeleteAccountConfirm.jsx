@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
 export default function DeleteAccountConfirm({ user }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export default function DeleteAccountConfirm({ user }) {
       });
       setSuccess(true);
       // Clean up URL
-      window.history.replaceState({}, document.title, '/admin');
+      navigate('/admin', { replace: true });
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al eliminar la cuenta');
     } finally {
@@ -63,7 +65,7 @@ export default function DeleteAccountConfirm({ user }) {
           <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
             La cuenta y todos sus datos asociados fueron eliminados permanentemente del sistema.
           </p>
-          <button className="btn-primary" onClick={() => window.location.href = '/admin'}>
+          <button className="btn-primary" onClick={() => navigate('/admin')}>
             Volver a Administración
           </button>
         </div>
