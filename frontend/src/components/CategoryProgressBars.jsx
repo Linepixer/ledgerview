@@ -18,7 +18,7 @@ export default function CategoryProgressBars({ data, currency }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', padding: '0 1rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', padding: '0' }}>
       {data.map((cat, index) => {
         const color = 'var(--profit)';
         // Create a subtle fade effect so not all bars are equally bright
@@ -26,11 +26,11 @@ export default function CategoryProgressBars({ data, currency }) {
 
         return (
           <div key={cat.type}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', alignItems: 'center' }}>
-              <span style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.95rem' }}>{cat.type}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                {formatCurrency(cat.value)} <span style={{ marginLeft: '0.5rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{cat.percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', alignItems: 'center', flexWrap: 'wrap', gap: '0.2rem' }}>
+              <span style={{ fontWeight: '500', color: 'var(--text-main)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{cat.type}</span>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', whiteSpace: 'nowrap', marginLeft: 'auto' }}>
+                {formatCurrency(cat.value)} <span style={{ marginLeft: '0.4rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{cat.percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+              </div>
             </div>
             <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
               <div

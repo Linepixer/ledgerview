@@ -102,11 +102,11 @@ function App() {
           style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
         >
           <img src="/logo.png" alt="LedgerView Logo" style={{ height: '32px' }} />
-          LedgerView
+          <span className="hide-on-mobile">LedgerView</span>
         </div>
         <div className="flex-row">
           {isAuthenticated && !currentPath.startsWith('/admin') && (
-            <div className="currency-toggle" style={{ marginRight: '1rem' }}>
+            <div className="currency-toggle header-currency-toggle">
               <button className={`toggle-btn ${currency === 'ARS' ? 'active' : ''}`} onClick={() => setCurrency('ARS')}>ARS</button>
               <button className={`toggle-btn ${currency === 'USD' ? 'active' : ''}`} onClick={() => setCurrency('USD')}>USD</button>
             </div>
@@ -158,17 +158,8 @@ function App() {
       </main>
 
       {isAuthenticated && (
-        <footer style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '1.5rem 0 0.1rem 0',
-          marginTop: 'auto',
-          borderTop: '1px solid var(--border)',
-          color: 'var(--text-muted)',
-          fontSize: '0.85rem'
-        }}>
-          <div>LedgerView &copy; 2026 &mdash; Proyecto de código abierto para seguimiento de inversiones personales.</div>
+        <footer className="app-footer">
+          <div style={{ maxWidth: '400px', lineHeight: '1.4' }}>LedgerView &copy; 2026 &mdash; Proyecto de código abierto para seguimiento de inversiones personales.</div>
           <div>Contacto: <a href="mailto:diazmatias@linepixer.com" style={{ color: 'inherit', textDecoration: 'none' }}>diazmatias@linepixer.com</a></div>
         </footer>
       )}

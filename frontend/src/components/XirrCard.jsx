@@ -15,7 +15,7 @@ export default function XirrCard({ portfolio, isArs }) {
   const maxXirr = Math.max(...assetXirrData.map(a => Math.abs(a.xirr)), 1); // Avoid div by 0
 
   return (
-    <div className="card" style={{ marginBottom: '2rem' }}>
+    <div className="card" style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>Rendimiento anualizado</h3>
@@ -34,10 +34,10 @@ export default function XirrCard({ portfolio, isArs }) {
 
       {assetXirrData.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            <span style={{ width: '100px' }}>Activo</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+            <span style={{ width: '60px' }}>Activo</span>
             <span style={{ flex: 1, textAlign: 'center' }}>Rendimiento anual</span>
-            <span style={{ width: '80px', textAlign: 'right' }}>XIRR %</span>
+            <span style={{ width: '75px', textAlign: 'right' }}>XIRR %</span>
           </div>
 
           {assetXirrData.map(asset => {
@@ -45,11 +45,11 @@ export default function XirrCard({ portfolio, isArs }) {
             const barWidth = `${(Math.abs(asset.xirr) / maxXirr) * 100}%`;
 
             return (
-              <div key={asset.ticker} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                <span style={{ width: '100px', fontWeight: 600 }}>{asset.ticker}</span>
+              <div key={asset.ticker} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ width: '60px', fontWeight: 600 }}>{asset.ticker}</span>
 
                 {/* Bar Container */}
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 1rem' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.5rem' }}>
                   <div style={{ display: 'flex', width: '100%', height: '8px', background: 'var(--bg-main)', borderRadius: '4px', overflow: 'hidden' }}>
                     {/* Negative side */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', borderRight: '1px solid var(--border)' }}>
@@ -66,7 +66,7 @@ export default function XirrCard({ portfolio, isArs }) {
                   </div>
                 </div>
 
-                <span style={{ width: '80px', textAlign: 'right', fontWeight: 600, color: isPositive ? 'var(--profit)' : 'var(--loss)' }}>
+                <span style={{ width: '75px', textAlign: 'right', fontWeight: 600, color: isPositive ? 'var(--profit)' : 'var(--loss)' }}>
                   {isPositive ? '+' : ''}{asset.xirr.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                 </span>
               </div>

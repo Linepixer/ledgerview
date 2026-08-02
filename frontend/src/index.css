@@ -125,8 +125,8 @@ header {
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .summary-value {
@@ -406,7 +406,23 @@ input:focus, select:focus, textarea:focus {
   opacity: 1;
 }
 
+/* Footer */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0 0.5rem 0;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 /* Responsive Fixes */
+.hide-on-desktop {
+  display: none !important;
+}
+
 .table-container {
   width: 100%;
   overflow-x: auto;
@@ -414,7 +430,63 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
+  .app-container {
+    padding: 1rem;
+  }
+  
+  header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .hide-on-desktop {
+    display: block !important;
+  }
+
+  .header-currency-toggle {
+    margin-right: 0.5rem !important;
+  }
+
+  .toggle-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .tabs-container {
+    gap: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px; /* Space for scrollbar if it appears */
+    margin-bottom: 1rem;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .tab {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+  }
+  
   body {
-    padding-bottom: 80px; /* Space for FAB on mobile */
+    padding-bottom: 85px; /* Space for FAB on mobile */
   }
 }

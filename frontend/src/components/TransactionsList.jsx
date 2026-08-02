@@ -27,7 +27,8 @@ const formatQuantity = (value, ticker) => {
   }
   
   if (isCrypto) {
-    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
+    const maxDigits = (ticker === 'BTC' || ticker === 'ETH') ? 8 : (value > 1 ? 4 : 8);
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: maxDigits }).format(value);
   }
   
   return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 4 }).format(value);
