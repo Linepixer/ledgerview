@@ -10,7 +10,7 @@ const formatDate = (dateString) => {
   }).format(d);
 };
 
-export default function ImportTransactions({ onImportSuccess, onCancel, assets = [] }) {
+export default function ImportTransactions({ onImportSuccess, onCancel, onDataChanged, assets = [] }) {
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
   const [error, setError] = useState('');
@@ -198,6 +198,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, assets =
     try {
       const response = await api.post('/transactions/bulk', previewData);
       setImportedCount(previewData.length);
+      if (onDataChanged) onDataChanged();
     } catch (err) {
       console.error("Error bulk importing:", err);
       setError(err.response?.data?.detail || "Error al importar transacciones. Verifica el formato.");

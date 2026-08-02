@@ -10,6 +10,7 @@ import AssetDetailView from './AssetDetailView';
 import PortfolioAssetDetailView from './PortfolioAssetDetailView';
 import CategoryProgressBars from './CategoryProgressBars';
 import ImportTransactions from './ImportTransactions';
+import XirrCard from './XirrCard';
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat('es-AR', {
@@ -383,16 +384,6 @@ export default function Dashboard({ currency }) {
 
           <div className="summary-cards">
             <div className="card">
-              <div className="summary-label">Rendimiento (XIRR)</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem', color: xirr >= 0 ? 'var(--profit)' : 'var(--loss)' }}>
-                {xirr >= 0 ? '↗ ' : '↘ '}
-                {Math.abs(xirr).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                {isArs ? 'Tasa nominal en pesos' : 'Ref: Inflación USD ~3%'}
-              </div>
-            </div>
-            <div className="card">
               <div className="summary-label">Dólar Bolsa</div>
               <div className="summary-value" style={{ fontSize: '1.5rem' }}>
                 {portfolio.exchange_rates.bolsa ? '$' + Math.round(portfolio.exchange_rates.bolsa).toLocaleString('es-AR') : '-'}
@@ -429,6 +420,8 @@ export default function Dashboard({ currency }) {
                   </div>
                 </div>
               </div>
+
+              <XirrCard portfolio={portfolio} isArs={isArs} />
 
               <div className="table-container">
                 <table>
@@ -598,7 +591,10 @@ export default function Dashboard({ currency }) {
             onCancel={() => navigateTo('transactions', null, false)}
             onImportSuccess={(count) => {
               navigateTo('transactions', null, false);
-              handleTransactionAdded();
+            }}
+            onDataChanged={() => {
+              fetchData();
+              setRefreshTransactions(prev => prev + 1);
             }}
             assets={allAssets}
           />

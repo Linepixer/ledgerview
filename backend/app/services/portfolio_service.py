@@ -203,11 +203,10 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
         if total_portfolio_usd > 0:
             pa.portfolio_percentage = (pa.total_value_usd / total_portfolio_usd) * 100
             
-    # Calculate XIRR
-    from datetime import datetime
-    
     usd_flows = []
     ars_flows = []
+    usd_flows_by_asset = defaultdict(list)
+    ars_flows_by_asset = defaultdict(list)
     
     for t in transactions:
         qty = float(t.quantity)
@@ -242,6 +241,8 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
         t_date = t.timestamp.date() if hasattr(t.timestamp, 'date') else t.timestamp
         usd_flows.append((t_date, flow_usd))
         ars_flows.append((t_date, flow_ars))
+        usd_flows_by_asset[t.asset_id].append((t_date, flow_usd))
+        ars_flows_by_asset[t.asset_id].append((t_date, flow_ars))
         
     today = datetime.now().date()
     usd_flows.append((today, total_portfolio_usd))
@@ -249,6 +250,21 @@ def get_portfolio_summary(db: Session, user_id: UUID) -> PortfolioSummary:
     
     xirr_usd = _calculate_xirr(usd_flows)
     xirr_ars = _calculate_xirr(ars_flows)
+    
+    # Calculate per-asset XIRR
+    for p_asset in portfolio_assets:
+        asset_id = next((a.id for a in assets if a.ticker == p_asset.ticker), None)
+        if asset_id:
+            a_usd_flows = usd_flows_by_asset.get(asset_id, [])
+            a_ars_flows = ars_flows_by_asset.get(asset_id, [])
+            
+            if a_usd_flows:
+                a_usd_flows.append((today, p_asset.total_value_usd))
+                p_asset.xirr_usd = _calculate_xirr(a_usd_flows)
+            
+            if a_ars_flows:
+                a_ars_flows.append((today, p_asset.total_value_ars))
+                p_asset.xirr_ars = _calculate_xirr(a_ars_flows)
     
     return PortfolioSummary(
         assets=portfolio_assets,

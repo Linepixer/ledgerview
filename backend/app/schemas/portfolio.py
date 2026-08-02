@@ -21,6 +21,9 @@ class PortfolioAsset(BaseModel):
     
     portfolio_percentage: float
     target_percentage: float = 0.0
+    
+    xirr_usd: float = 0.0
+    xirr_ars: float = 0.0
 
 class PortfolioSummary(BaseModel):
     assets: List[PortfolioAsset]
