@@ -71,7 +71,7 @@ export default function PortfolioAssetDetailView({ asset, currency, onBack, onGo
         </button>
       </div>
 
-      <div className="card" style={{ padding: '2rem' }}>
+      <div className="card detail-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '2rem' }}>

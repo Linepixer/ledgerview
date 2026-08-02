@@ -12,10 +12,10 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   const filteredData = useMemo(() => {
     if (!data || data.length === 0) return [];
     if (timeRange === 'MAX') return data;
-    
+
     const now = new Date();
     let cutoffDate = new Date();
-    
+
     switch (timeRange) {
       case '1S': cutoffDate.setDate(now.getDate() - 7); break;
       case '1M': cutoffDate.setMonth(now.getMonth() - 1); break;
@@ -24,10 +24,10 @@ export default function AssetDetailView({ asset, currency, onBack }) {
       case '1A': cutoffDate.setFullYear(now.getFullYear() - 1); break;
       default: break;
     }
-    
+
     const cutoffStr = cutoffDate.toISOString().split('T')[0];
     const filtered = data.filter(d => d.date >= cutoffStr);
-    
+
     if (filtered.length < 2) return data.slice(-2);
     return filtered;
   }, [data, timeRange]);
@@ -46,13 +46,13 @@ export default function AssetDetailView({ asset, currency, onBack }) {
         setLoading(false);
       }
     };
-    
+
     fetchHistory();
   }, [asset.ticker]);
 
   const isArs = currency === 'ARS';
   const dataKey = isArs ? 'price_ars' : 'price_usd';
-  
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -70,18 +70,18 @@ export default function AssetDetailView({ asset, currency, onBack }) {
   }
 
   // Determine current price (use from portfolio if available, else from asset endpoint)
-  const currentPrice = isArs 
+  const currentPrice = isArs
     ? (asset.current_price_ars !== undefined ? asset.current_price_ars : 0)
     : (asset.current_price_usd !== undefined ? asset.current_price_usd : 0);
 
   return (
     <div style={{ paddingBottom: '2rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
-        <button 
-          onClick={onBack} 
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '0.5rem', 
-            background: 'transparent', border: 'none', 
+        <button
+          onClick={onBack}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'transparent', border: 'none',
             color: 'var(--text-muted)', cursor: 'pointer',
             fontSize: '1rem'
           }}
@@ -90,8 +90,8 @@ export default function AssetDetailView({ asset, currency, onBack }) {
         </button>
       </div>
 
-      <div className="card" style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      <div className="card detail-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '2rem' }}>
               {asset.ticker} <span className="text-muted" style={{ fontSize: '1.25rem', fontWeight: 'normal' }}>{asset.name}</span>
@@ -104,10 +104,10 @@ export default function AssetDetailView({ asset, currency, onBack }) {
 
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, color: 'var(--text-muted)', fontWeight: 500 }}>Historial de Precios</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h3 style={{ margin: 0, color: 'var(--text-muted)', fontWeight: 500 }}>Historial de precios</h3>
           {!loading && !error && data.length > 0 && (
-            <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem', borderRadius: '8px', flexWrap: 'wrap' }}>
               {['1S', '1M', '3M', '6M', '1A', 'MAX'].map(range => (
                 <button
                   key={range}
@@ -146,35 +146,40 @@ export default function AssetDetailView({ asset, currency, onBack }) {
         ) : (
           <div style={{ width: '100%', height: 450 }}>
             <ResponsiveContainer>
-              <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={filteredData} margin={{ top: 20, right: 0, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorAsset" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                    <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                    <stop offset="95%" stopColor={color} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: 'var(--text-muted)', fontSize: 12 }} 
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
                   dy={10}
                   minTickGap={40}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
-                  width={80}
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11, dx: 10, dy: -10, textAnchor: 'start' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `$${(value / 1000000).toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M`;
+                    if (value >= 1000) return `$${(value / 1000).toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}k`;
+                    return `$${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  }}
+                  width={1}
                   domain={['auto', 'auto']}
+                  mirror={false}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'var(--bg-card)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '8px', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
                     color: 'var(--text-main)',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
                   }}
@@ -182,12 +187,12 @@ export default function AssetDetailView({ asset, currency, onBack }) {
                   formatter={(value) => [formatCurrency(value), 'Precio']}
                   labelStyle={{ color: 'var(--text-muted)', marginBottom: '5px' }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey={dataKey} 
-                  stroke={color} 
-                  fillOpacity={1} 
-                  fill="url(#colorAsset)" 
+                <Area
+                  type="monotone"
+                  dataKey={dataKey}
+                  stroke={color}
+                  fillOpacity={1}
+                  fill="url(#colorAsset)"
                   strokeWidth={3}
                   activeDot={{ r: 6, fill: color, stroke: 'var(--bg-main)', strokeWidth: 2 }}
                 />

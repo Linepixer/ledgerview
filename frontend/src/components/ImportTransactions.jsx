@@ -421,7 +421,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
                     <tr>
                       <th>Fecha y hora</th>
                       <th>Activo</th>
-                      <th>Operación</th>
+                      <th>Tipo</th>
                       <th className="text-right">Cantidad</th>
                       <th className="text-right">Precio Un.</th>
                       <th>Moneda</th>

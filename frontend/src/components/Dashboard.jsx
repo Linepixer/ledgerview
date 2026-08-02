@@ -547,7 +547,7 @@ export default function Dashboard({ currency }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h2 style={{ margin: 0 }}>Mercado</h2>
           </div>
-          <div className="table-container">
+          <div className="table-container hide-on-mobile">
             <table>
               <thead>
                 <tr>
@@ -607,6 +607,57 @@ export default function Dashboard({ currency }) {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View for Cotizaciones */}
+          <div className="hide-on-desktop">
+            {[...allAssets].sort((a, b) => {
+              const TYPE_ORDER = { 'Moneda Fiat': 1, 'ETFs': 2, 'Acciones': 3, 'Criptomonedas': 4 };
+              const orderA = TYPE_ORDER[getAssetType(a.ticker)] || 99;
+              const orderB = TYPE_ORDER[getAssetType(b.ticker)] || 99;
+              if (orderA !== orderB) return orderA - orderB;
+              return a.ticker.localeCompare(b.ticker);
+            }).map(asset => {
+              const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
+              return (
+                <div 
+                  key={asset.ticker} 
+                  onClick={() => handleAssetClick(asset)}
+                  style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '1px solid var(--border)', 
+                    borderRadius: 'var(--radius-md)', 
+                    padding: '1rem',
+                    marginBottom: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-hover)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                      }}>
+                        {getAssetIcon(asset.ticker, getAssetType(asset.ticker))}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{asset.ticker}</span>
+                        <span className="text-muted" style={{ fontSize: '0.85rem', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem' }}>
+                      <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{formatCurrency(currentPrice, currency)}</span>
+                      {getTypeBadge(getAssetType(asset.ticker))}
+                    </div>
+                  </div>
+
+                  <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', height: '60px' }}>
+                     <Sparkline data={assetsHistory[asset.ticker]} dataKey={isArs ? 'price_ars' : 'price_usd'} />
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </>
       )}
