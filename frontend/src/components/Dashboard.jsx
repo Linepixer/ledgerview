@@ -214,10 +214,8 @@ export default function Dashboard({ currency }) {
 
     window.addEventListener('popstate', handlePopState);
 
-    // Initialize base state if entering directly via URL
-    if (!window.history.state) {
-      checkPath();
-    }
+    // Initialize base state if entering directly via URL or F5
+    checkPath();
 
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);

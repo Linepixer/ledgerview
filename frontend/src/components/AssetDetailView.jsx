@@ -187,15 +187,17 @@ export default function AssetDetailView({ asset, currency, onBack }) {
                   formatter={(value) => [formatCurrency(value), 'Precio']}
                   labelStyle={{ color: 'var(--text-muted)', marginBottom: '5px' }}
                 />
-                <Area
-                  type="monotone"
-                  dataKey={dataKey}
-                  stroke={color}
-                  fillOpacity={1}
-                  fill="url(#colorAsset)"
-                  strokeWidth={3}
-                  activeDot={{ r: 6, fill: color, stroke: 'var(--bg-main)', strokeWidth: 2 }}
-                />
+                  <Area
+                    type="monotone"
+                    dataKey={dataKey}
+                    stroke={color}
+                    fillOpacity={1}
+                    fill="url(#colorAsset)"
+                    strokeWidth={3}
+                    animationBegin={200}
+                    animationDuration={1500}
+                    activeDot={{ r: 6, fill: color, stroke: 'var(--bg-main)', strokeWidth: 2 }}
+                  />
               </AreaChart>
             </ResponsiveContainer>
           </div>

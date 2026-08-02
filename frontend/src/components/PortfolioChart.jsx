@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function PortfolioChart({ data, isArs }) {
@@ -12,7 +12,7 @@ export default function PortfolioChart({ data, isArs }) {
     );
   }
 
-  const filterData = () => {
+  const filteredData = useMemo(() => {
     if (timeRange === 'MAX') return data;
     
     const now = new Date();
@@ -27,9 +27,8 @@ export default function PortfolioChart({ data, isArs }) {
     const filtered = data.filter(d => d.date >= targetString);
     
     return filtered.length >= 2 ? filtered : data.slice(-2);
-  };
+  }, [data, timeRange]);
 
-  const filteredData = filterData();
   const dataKey = isArs ? 'total_value_ars' : 'total_value_usd';
   
   // Determine color based on whether the portfolio went up or down in the filtered period
@@ -117,6 +116,8 @@ export default function PortfolioChart({ data, isArs }) {
             fillOpacity={1} 
             fill="url(#colorValue)" 
             strokeWidth={3}
+            animationBegin={200}
+            animationDuration={1500}
             activeDot={{ r: 6, fill: color, stroke: 'var(--bg-main)', strokeWidth: 2 }}
           />
         </AreaChart>
