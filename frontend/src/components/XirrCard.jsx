@@ -1,6 +1,13 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function XirrCard({ portfolio, isArs }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
   const globalXirr = isArs ? (portfolio.xirr_ars || 0) : (portfolio.xirr_usd || 0);
 
   // Filter assets that the user currently holds (total_value > 0)
@@ -54,13 +61,25 @@ export default function XirrCard({ portfolio, isArs }) {
                     {/* Negative side */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', borderRight: '1px solid var(--border)' }}>
                       {!isPositive && (
-                        <div style={{ width: barWidth, height: '100%', background: 'var(--loss)', borderRadius: '4px 0 0 4px' }} />
+                        <div style={{ 
+                          width: mounted ? barWidth : '0%', 
+                          height: '100%', 
+                          background: 'var(--loss)', 
+                          borderRadius: '4px 0 0 4px',
+                          transition: 'width 2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s'
+                        }} />
                       )}
                     </div>
                     {/* Positive side */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
                       {isPositive && (
-                        <div style={{ width: barWidth, height: '100%', background: 'var(--profit)', borderRadius: '0 4px 4px 0' }} />
+                        <div style={{ 
+                          width: mounted ? barWidth : '0%', 
+                          height: '100%', 
+                          background: 'var(--profit)', 
+                          borderRadius: '0 4px 4px 0',
+                          transition: 'width 2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s'
+                        }} />
                       )}
                     </div>
                   </div>
