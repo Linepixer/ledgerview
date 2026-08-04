@@ -112,6 +112,8 @@ function App() {
         )}
         
         <Routes>
+          <Route path="/reset-password" element={<ResetPassword onLogin={onLoginSuccess} />} />
+          
           {isAuthenticated ? (
             <>
               <Route path="/admin" element={<AdminDashboard user={user} />} />
@@ -134,7 +136,6 @@ function App() {
               <Route path="/login" element={<Auth onLogin={onLoginSuccess} />} />
               <Route path="/signup" element={<Auth onLogin={onLoginSuccess} />} />
               <Route path="/forgot-password" element={<ForgotPassword onSwitchToLogin={() => navigate('/login')} />} />
-              <Route path="/reset-password" element={<ResetPassword onLogin={onLoginSuccess} />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </>
           )}
