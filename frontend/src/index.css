@@ -440,7 +440,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 768px) {
   .app-container {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   
   header {
@@ -456,6 +456,28 @@ input:focus, select:focus, textarea:focus {
     display: block !important;
   }
 
+  .format-grid-row {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+  
+  .format-col-name {
+    font-size: 1.1rem;
+    padding-bottom: 4px !important;
+  }
+  
+  .format-col-desc {
+    padding-top: 0 !important;
+    padding-bottom: 12px !important;
+  }
+  
+  .format-col-format {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    margin: 0 16px 16px 16px;
+    padding: 12px !important;
+  }
+
   .header-currency-toggle {
     margin-right: 0.5rem !important;
   }
@@ -466,11 +488,10 @@ input:focus, select:focus, textarea:focus {
   }
 
   .tabs-container {
-    gap: 1rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 4px; /* Space for scrollbar if it appears */
+    gap: 0 !important;
+    justify-content: space-between !important;
     margin-bottom: 1rem;
+    width: 100%;
   }
 
   .app-footer {
@@ -480,13 +501,15 @@ input:focus, select:focus, textarea:focus {
   }
 
   .tab {
-    font-size: 0.9rem;
+    font-size: 0.8rem !important;
     white-space: nowrap;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0 !important;
+    flex: 1 1 0 !important;
+    text-align: center !important;
   }
   
   .card {
-    padding: 1rem;
+    padding: 0.8rem !important;
   }
 
   .detail-card {

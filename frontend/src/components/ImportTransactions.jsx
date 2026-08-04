@@ -237,19 +237,11 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
   }
 
   return (
-    <div className="card" style={{ padding: '2rem' }}>
-      <div className="responsive-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Upload size={24} color="var(--accent)" />
-          Importar transacciones
-        </h2>
-        <button
-          onClick={onCancel}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-        >
-          <X size={24} />
-        </button>
-      </div>
+    <div className="card">
+      <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+        <Upload size={24} color="var(--accent)" />
+        Importar transacciones
+      </h2>
 
       {!file ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -275,86 +267,84 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
               </a>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', overflowX: 'auto', marginBottom: '1rem' }}>
-              <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Columna</th>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Descripción</th>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Formato</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    {
-                      name: "Fecha",
-                      desc: "Fecha y hora a la que se realizó la transacción.",
-                      format: "Formato requerido: DD/MM/YYYY HH:MM",
-                      badges: ["01/07/2026 14:30"]
-                    },
-                    {
-                      name: "Activo",
-                      desc: "Ticker del instrumento financiero.",
-                      format: "Tickers actualmente registrados en el sistema:",
-                      badges: assets.length > 0 ? assets.map(a => a.ticker) : ["SPY", "BTC", "USD"]
-                    },
-                    {
-                      name: "Tipo",
-                      desc: "Tipo de operación realizada.",
-                      format: "Tipos de operación aceptados:",
-                      badges: ["Compra", "Venta", "Intereses", "Comisión"]
-                    },
-                    {
-                      name: "Cantidad",
-                      desc: "Cantidad de unidades operadas.",
-                      format: "Solo números. Utilizar punto (.) como separador decimal.",
-                      badges: ["10", "0.05", "150.5"]
-                    },
-                    {
-                      name: "Precio unitario",
-                      desc: "Precio por unidad del activo.",
-                      format: "Solo números. Utilizar punto (.) como separador decimal.",
-                      badges: ["62000.50", "4500"]
-                    },
-                    {
-                      name: "Divisa operada",
-                      desc: "Moneda en la que se realizó la operación.",
-                      format: "Divisas disponibles:",
-                      badges: ["USD", "ARS"]
-                    },
-                    {
-                      name: "Plataforma",
-                      desc: "Entidad financiera, broker o exchange.",
-                      format: "Texto libre para identificar la plataforma.",
-                      badges: ["Binance", "BullMarket", "Balanz"]
-                    }
-                  ].map((doc, idx, arr) => (
-                    <tr key={idx} style={{ borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border)' }}>
-                      <td data-label="Columna" style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>{doc.name}</td>
-                      <td data-label="Descripción" style={{ padding: '16px 20px' }}>
-                        <div style={{ marginBottom: '4px' }}>{doc.desc}</div>
-                      </td>
-                      <td data-label="Formato" style={{ padding: '16px 20px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '8px' }}><em>{doc.format}</em></div>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {doc.badges.map((b, i) => (
-                            <span key={i} style={{
-                              background: 'rgba(255,255,255,0.08)',
-                              padding: '4px 10px',
-                              borderRadius: '6px',
-                              fontSize: '0.8rem',
-                              color: 'var(--text-main)',
-                              border: '1px solid rgba(255,255,255,0.1)'
-                            }}>
-                              {b}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
+              <div className="format-grid-header hide-on-mobile" style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Columna</div>
+                <div style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Descripción</div>
+                <div style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Formato</div>
+              </div>
+              <div className="format-grid-body">
+                {[
+                  {
+                    name: "Fecha",
+                    desc: "Fecha y hora a la que se realizó la transacción.",
+                    format: "Formato requerido: DD/MM/YYYY HH:MM",
+                    badges: ["01/07/2026 14:30"]
+                  },
+                  {
+                    name: "Activo",
+                    desc: "Ticker del instrumento financiero.",
+                    format: "Tickers actualmente registrados en el sistema:",
+                    badges: assets.length > 0 ? assets.map(a => a.ticker) : ["SPY", "BTC", "USD"]
+                  },
+                  {
+                    name: "Tipo",
+                    desc: "Tipo de operación realizada.",
+                    format: "Tipos de operación aceptados:",
+                    badges: ["Compra", "Venta", "Intereses", "Comisión"]
+                  },
+                  {
+                    name: "Cantidad",
+                    desc: "Cantidad de unidades operadas.",
+                    format: "Solo números. Utilizar punto (.) como separador decimal.",
+                    badges: ["10", "0.05", "150.5"]
+                  },
+                  {
+                    name: "Precio unitario",
+                    desc: "Precio por unidad del activo.",
+                    format: "Solo números. Utilizar punto (.) como separador decimal.",
+                    badges: ["62000.50", "4500"]
+                  },
+                  {
+                    name: "Divisa operada",
+                    desc: "Moneda en la que se realizó la operación.",
+                    format: "Divisas disponibles:",
+                    badges: ["USD", "ARS"]
+                  },
+                  {
+                    name: "Plataforma",
+                    desc: "Entidad financiera, broker o exchange.",
+                    format: "Texto libre para identificar la plataforma.",
+                    badges: ["Binance", "BullMarket", "Balanz"]
+                  }
+                ].map((doc, idx, arr) => (
+                  <div key={idx} className="format-grid-row" style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr', borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border)' }}>
+                    <div className="format-col-name" style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--text-main)' }}>
+                      {doc.name}
+                    </div>
+                    <div className="format-col-desc" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>{doc.desc}</span>
+                    </div>
+                    <div className="format-col-format" style={{ padding: '16px 20px' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '8px' }}><em>{doc.format}</em></div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {doc.badges.map((b, i) => (
+                          <span key={i} style={{
+                            background: 'rgba(255,255,255,0.08)',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '0.8rem',
+                            color: 'var(--text-main)',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                          }}>
+                            {b}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
