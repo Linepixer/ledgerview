@@ -17,6 +17,7 @@ export default function CorporateEventsManager() {
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   const newRatioInputRef = useRef(null);
+  const dateInputRef = useRef(null);
 
   useEffect(() => {
     if (formAssetId && newRatioInputRef.current) {
@@ -93,8 +94,8 @@ export default function CorporateEventsManager() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="admin-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+        <div className="admin-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TrendingDown size={32} color="var(--accent)" />
           <h1 style={{ margin: 0 }}>Ratios de conversión</h1>
         </div>
@@ -113,8 +114,8 @@ export default function CorporateEventsManager() {
         {showForm && (
           <div className="modal-overlay" onClick={() => !formSubmitting && closeForm()}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ margin: 0 }}>Registrar cambio de ratio</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+                <h2 style={{ margin: 0, paddingRight: '1rem', lineHeight: '1.2' }}>Registrar cambio de ratio</h2>
                 <button onClick={closeForm} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                   <X size={24} />
                 </button>
@@ -158,7 +159,7 @@ export default function CorporateEventsManager() {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: 'var(--bg-main)', padding: '1rem', border: '1px solid var(--border)', borderRadius: '6px' }}>
 
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', background: 'var(--bg-card)', borderRadius: '4px', border: '1px dashed var(--border)' }}>
+                        <div className="responsive-flex" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'var(--bg-card)', borderRadius: '4px', border: '1px dashed var(--border)' }}>
                           <span style={{ fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 'bold' }}>RATIO ACTUAL VIGENTE:</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
@@ -172,7 +173,7 @@ export default function CorporateEventsManager() {
 
                         <div>
                           <label className="summary-label" style={{ fontSize: '0.75rem', color: 'var(--accent)' }}>NUEVO RATIO A APLICAR</label>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '12px', marginTop: '12px' }}>
                             <input
                               ref={newRatioInputRef}
                               type="text"
@@ -186,7 +187,7 @@ export default function CorporateEventsManager() {
                               }}
                               placeholder="Cantidad"
                               required={!!formAssetId}
-                              style={{ width: '120px', padding: '0.8rem', background: 'var(--bg-card)', border: formNewRatio ? '1px solid var(--accent)' : '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 'bold', transition: 'border 0.2s', outline: 'none' }}
+                              style={{ flex: '1', maxWidth: '120px', padding: '0.8rem', background: 'var(--bg-card)', border: formNewRatio ? '1px solid var(--accent)' : '1px solid var(--border)', color: 'var(--text-main)', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 'bold', transition: 'border 0.2s', outline: 'none' }}
                             />
                             <span style={{ fontSize: '0.95rem', color: 'var(--text-main)', whiteSpace: 'nowrap', fontWeight: '500' }}>
                               CEDEARs = <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>1</span> {assets.find(a => a.id === formAssetId)?.ticker || 'Acción'}
@@ -200,26 +201,44 @@ export default function CorporateEventsManager() {
                     <div style={{ opacity: formAssetId ? 1 : 0.4, pointerEvents: formAssetId ? 'auto' : 'none', transition: 'all 0.3s' }}>
                       <label className="summary-label">Fecha <span className="text-loss">*</span></label>
                       <div style={{ position: 'relative', marginTop: '0.5rem' }}>
-                        <input
-                          type="date"
-                          value={formDate}
-                          onChange={e => setFormDate(e.target.value)}
-                          required={!!formAssetId}
+                        <div 
+                          onClick={() => {
+                            if (dateInputRef.current && dateInputRef.current.showPicker) {
+                              try { dateInputRef.current.showPicker(); } catch (e) {}
+                            }
+                          }}
                           style={{
                             width: '100%',
                             padding: '0.75rem',
                             background: 'var(--bg-main)',
                             border: '1px solid var(--border)',
-                            color: formDate === '' ? 'transparent' : 'var(--text-main)',
+                            color: formDate ? 'var(--text-main)' : 'var(--text-muted)',
                             borderRadius: '4px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
                           }}
-                        />
-                        {!formDate && (
-                          <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>
-                            Día de entrada en vigencia
-                          </div>
-                        )}
+                        >
+                          <span>{formDate || "Día de entrada en vigencia"}</span>
+                          <Calendar size={18} color="var(--text-muted)" />
+                          <input
+                            ref={dateInputRef}
+                            type="date"
+                            value={formDate}
+                            onChange={e => setFormDate(e.target.value)}
+                            required={!!formAssetId}
+                            style={{
+                              position: 'absolute',
+                              opacity: 0,
+                              width: '100%',
+                              height: '100%',
+                              top: 0,
+                              left: 0,
+                              pointerEvents: 'none'
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -245,7 +264,7 @@ export default function CorporateEventsManager() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
                   <th style={{ padding: '12px 15px', color: 'var(--text-muted)', fontWeight: 500 }}>Activo</th>
@@ -258,20 +277,20 @@ export default function CorporateEventsManager() {
               <tbody>
                 {events.map(event => (
                   <tr key={event.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '12px 15px', fontWeight: 'bold' }}>{event.asset_ticker}</td>
-                    <td style={{ padding: '12px 15px', textTransform: 'capitalize' }}>{event.type}</td>
-                    <td style={{ padding: '12px 15px' }}>
+                    <td data-label="Activo" style={{ padding: '12px 15px', fontWeight: 'bold' }}>{event.asset_ticker}</td>
+                    <td data-label="Tipo" style={{ padding: '12px 15px', textTransform: 'capitalize' }}>{event.type}</td>
+                    <td data-label="Multiplicador" style={{ padding: '12px 15px' }}>
                       <span style={{ color: event.ratio > 1 ? 'var(--profit)' : 'var(--loss)' }}>
                         x{event.ratio}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 15px' }}>
+                    <td data-label="Fecha Efectiva" style={{ padding: '12px 15px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Calendar size={14} color="var(--text-muted)" />
                         {new Date(event.timestamp).toLocaleDateString()}
                       </div>
                     </td>
-                    <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+                    <td data-label="Acciones" style={{ padding: '12px 15px', textAlign: 'right' }}>
                       <button
                         onClick={() => handleDelete(event.id)}
                         style={{

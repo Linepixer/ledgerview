@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import api from '../api';
 
 export default function ChangePasswordModal({ onClose, onSuccess }) {
@@ -8,6 +8,9 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,59 +60,62 @@ export default function ChangePasswordModal({ onClose, onSuccess }) {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div>
               <label className="summary-label">Contraseña Actual</label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-                style={{
-                  padding: '0.75rem',
-                  background: 'var(--bg-main)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-main)',
-                  borderRadius: '4px',
-                  width: '100%',
-                  marginTop: '0.5rem'
-                }}
-              />
+              <div className="password-input-flex" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  style={{ flex: 1, color: 'white', outline: 'none', minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent(!showCurrent)}
+                  style={{ paddingRight: '0.75rem', paddingLeft: '0.25rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="summary-label">Nueva Contraseña</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                style={{
-                  padding: '0.75rem',
-                  background: 'var(--bg-main)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-main)',
-                  borderRadius: '4px',
-                  width: '100%',
-                  marginTop: '0.5rem'
-                }}
-              />
+              <div className="password-input-flex" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  style={{ flex: 1, color: 'white', outline: 'none', minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  style={{ paddingRight: '0.75rem', paddingLeft: '0.25rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="summary-label">Confirmar Nueva Contraseña</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                style={{
-                  padding: '0.75rem',
-                  background: 'var(--bg-main)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-main)',
-                  borderRadius: '4px',
-                  width: '100%',
-                  marginTop: '0.5rem'
-                }}
-              />
+              <div className="password-input-flex" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  style={{ flex: 1, color: 'white', outline: 'none', minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  style={{ paddingRight: '0.75rem', paddingLeft: '0.25rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button

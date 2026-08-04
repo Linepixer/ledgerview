@@ -71,12 +71,14 @@ export default function AdminDashboard({ user }) {
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
+    <div className="admin-container" style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
       <CorporateEventsManager />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', marginTop: '40px' }}>
-        <Shield size={32} color="var(--accent)" />
-        <h1 style={{ margin: 0 }}>Administración de cuentas</h1>
+      <div className="admin-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', marginTop: '40px' }}>
+        <div className="admin-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Shield size={32} color="var(--accent)" />
+          <h1 style={{ margin: 0 }}>Administración de cuentas</h1>
+        </div>
       </div>
 
       <div className="card" style={{ padding: '0' }}>
@@ -86,7 +88,7 @@ export default function AdminDashboard({ user }) {
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--loss)' }}>{error}</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
                   <th style={{ padding: '15px 20px', color: 'var(--text-muted)', fontWeight: 500 }}>Nombre</th>
@@ -104,9 +106,9 @@ export default function AdminDashboard({ user }) {
                   return a.email.localeCompare(b.email);
                 }).map(u => (
                   <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '15px 20px' }}>{u.name || '-'}</td>
-                    <td style={{ padding: '15px 20px', color: 'var(--text-muted)' }}>{u.email}</td>
-                    <td style={{ padding: '15px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <td data-label="Nombre" style={{ padding: '15px 20px' }}>{u.name || '-'}</td>
+                    <td data-label="Email" style={{ padding: '15px 20px', color: 'var(--text-muted)' }}>{u.email}</td>
+                    <td data-label="Estado" style={{ padding: '15px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                       {u.is_admin ? (
                         <span style={{
                           display: 'inline-block',
@@ -131,7 +133,7 @@ export default function AdminDashboard({ user }) {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '15px 20px', textAlign: 'right' }}>
+                    <td data-label="Acciones" style={{ padding: '15px 20px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', alignItems: 'center' }}>
                         
                         {/* Custom Toggle Switch for Active/Inactive */}

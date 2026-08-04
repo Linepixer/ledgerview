@@ -238,7 +238,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
 
   return (
     <div className="card" style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="responsive-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Upload size={24} color="var(--accent)" />
           Importar transacciones
@@ -255,7 +255,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {/* Instructions */}
           <div style={{ background: 'var(--bg-main)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+            <div className="responsive-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
                 <h3 style={{ marginTop: 0, fontSize: '1.2rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   Especificaciones de formato
@@ -275,8 +275,8 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
               </a>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '8px', overflowX: 'auto', marginBottom: '1rem' }}>
+              <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
                     <th style={{ padding: '12px 20px', color: 'var(--text-muted)', fontWeight: 600 }}>Columna</th>
@@ -330,11 +330,11 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
                     }
                   ].map((doc, idx, arr) => (
                     <tr key={idx} style={{ borderBottom: idx === arr.length - 1 ? 'none' : '1px solid var(--border)' }}>
-                      <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>{doc.name}</td>
-                      <td style={{ padding: '16px 20px' }}>
+                      <td data-label="Columna" style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>{doc.name}</td>
+                      <td data-label="Descripción" style={{ padding: '16px 20px' }}>
                         <div style={{ marginBottom: '4px' }}>{doc.desc}</div>
                       </td>
-                      <td style={{ padding: '16px 20px' }}>
+                      <td data-label="Formato" style={{ padding: '16px 20px' }}>
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '8px' }}><em>{doc.format}</em></div>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {doc.badges.map((b, i) => (
@@ -396,7 +396,7 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '1rem 1.5rem', borderRadius: '8px' }}>
+          <div className="responsive-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'rgba(255,255,255,0.03)', padding: '1rem 1.5rem', borderRadius: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FileSpreadsheet color="var(--accent)" />
               <span className="font-semibold">{file.name}</span>
@@ -415,8 +415,8 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
           {!error && previewData.length > 0 && (
             <>
               <h3 style={{ marginBottom: '0.5rem' }}>Vista previa</h3>
-              <div className="table-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <table>
+              <div className="table-container" style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="admin-table">
                   <thead>
                     <tr>
                       <th>Fecha y hora</th>
@@ -431,13 +431,13 @@ export default function ImportTransactions({ onImportSuccess, onCancel, onDataCh
                   <tbody>
                     {previewData.map((row, idx) => (
                       <tr key={idx}>
-                        <td className="text-muted">{formatDate(row.timestamp)}</td>
-                        <td className="font-semibold">{row.ticker}</td>
-                        <td>{row.type}</td>
-                        <td className="text-right">{row.quantity}</td>
-                        <td className="text-right">{row.price_per_unit}</td>
-                        <td>{row.operated_currency}</td>
-                        <td className="text-muted">{row.platform || '-'}</td>
+                        <td data-label="Fecha y hora" className="text-muted">{formatDate(row.timestamp)}</td>
+                        <td data-label="Activo" className="font-semibold">{row.ticker}</td>
+                        <td data-label="Tipo">{row.type}</td>
+                        <td data-label="Cantidad" className="text-right">{row.quantity}</td>
+                        <td data-label="Precio Un." className="text-right">{row.price_per_unit}</td>
+                        <td data-label="Moneda">{row.operated_currency}</td>
+                        <td data-label="Plataforma" className="text-muted">{row.platform || '-'}</td>
                       </tr>
                     ))}
                   </tbody>

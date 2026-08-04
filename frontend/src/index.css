@@ -503,6 +503,93 @@ input:focus, select:focus, textarea:focus {
   body {
     padding-bottom: 85px; /* Space for FAB on mobile */
   }
+
+  /* Admin Dashboard Mobile Fixes */
+  .admin-container {
+    padding: 0 0.5rem !important;
+    margin-top: 20px !important;
+  }
+  
+  .admin-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 15px !important;
+    margin-bottom: 20px !important;
+    margin-top: 30px !important;
+  }
+
+  .admin-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .responsive-flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 15px !important;
+  }
+  .responsive-flex .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-title h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .admin-title svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Card-based Table Layout for Mobile */
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .admin-table thead {
+    display: none;
+  }
+  
+  .admin-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.5rem;
+  }
+  
+  .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 10px !important;
+    white-space: normal !important;
+    text-align: right !important;
+  }
+  
+  .admin-table td:last-child {
+    border-bottom: none !important;
+  }
+  
+  .admin-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    text-align: left;
+    margin-right: 15px;
+    white-space: nowrap;
+  }
+
+  /* Specific fix for Actions column on mobile */
+  .admin-table td:last-child > div {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* Fix Recharts click outline */
