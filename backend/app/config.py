@@ -7,7 +7,7 @@ load_dotenv(dotenv_path="../.env")
 class Settings:
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://postgres:password@localhost:5432/ledgerview" # Local dev fallback
+        "postgresql://ledgerapp:local_dev_pwd@localhost:5432/ledgerview" # Local dev fallback
     )
     
     SECRET_KEY: str = os.getenv("SECRET_KEY")

@@ -141,6 +141,14 @@ def get_transactions(
         
     return transactions
 
+@router.delete("/all", status_code=status.HTTP_204_NO_CONTENT)
+def delete_all_transactions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
+    db.commit()
+
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_transaction(
     transaction_id: UUID,

@@ -11,7 +11,6 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
   const [operatedCurrency, setOperatedCurrency] = useState('ARS');
   const [exchangeRate, setExchangeRate] = useState('');
   const [platform, setPlatform] = useState('');
-  const [notes, setNotes] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +50,10 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
     return 'Stock';
   };
 
+  const formatFiat = (val) => {
+    return (Math.round((val + Number.EPSILON) * 100) / 100).toString();
+  };
+
   // Automatically compute missing values (Quantity, Unit Price, or Total)
   const handleQuantityChange = (e) => {
     let val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
@@ -62,33 +65,41 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
     const t = parseFloat(totalValue);
     
     if (!isNaN(q) && unitPrice !== '') {
-      if (!isNaN(u)) setTotalValue((q * u).toFixed(8).replace(/\.?0+$/, ''));
+      if (!isNaN(u)) setTotalValue(formatFiat(q * u));
     } else if (!isNaN(q) && totalValue !== '') {
-      if (!isNaN(t) && q !== 0) setUnitPrice((t / q).toFixed(8).replace(/\.?0+$/, ''));
+      if (!isNaN(t) && q !== 0) setUnitPrice(formatFiat(t / q));
     }
   };
 
   const handleUnitPriceChange = (e) => {
     let val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
     if ((val.match(/\./g) || []).length > 1) return;
+    if (val.includes('.')) {
+      const parts = val.split('.');
+      if (parts[1].length > 2) val = parts[0] + '.' + parts[1].slice(0, 2);
+    }
     setUnitPrice(val);
     
     const u = parseFloat(val);
     const q = parseFloat(quantity);
     if (!isNaN(u) && quantity !== '') {
-      if (!isNaN(q)) setTotalValue((q * u).toFixed(8).replace(/\.?0+$/, ''));
+      if (!isNaN(q)) setTotalValue(formatFiat(q * u));
     }
   };
 
   const handleTotalValueChange = (e) => {
     let val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
     if ((val.match(/\./g) || []).length > 1) return;
+    if (val.includes('.')) {
+      const parts = val.split('.');
+      if (parts[1].length > 2) val = parts[0] + '.' + parts[1].slice(0, 2);
+    }
     setTotalValue(val);
     
     const t = parseFloat(val);
     const q = parseFloat(quantity);
     if (!isNaN(t) && quantity !== '') {
-      if (!isNaN(q) && q !== 0) setUnitPrice((t / q).toFixed(8).replace(/\.?0+$/, ''));
+      if (!isNaN(q) && q !== 0) setUnitPrice(formatFiat(t / q));
     }
   };
 
@@ -114,7 +125,7 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
         operated_currency: operatedCurrency,
         exchange_rate: exchangeRate ? parseFloat(exchangeRate) : null,
         platform: platform || null,
-        notes: notes || null
+        notes: null
       });
       onTransactionAdded();
     } catch (err) {
@@ -225,9 +236,16 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
           <label className="summary-label">{getExchangeRateLabel()} <span className="text-loss">*</span></label>
           <input 
             type="number" 
-            step="any" 
+            step="0.01" 
             value={exchangeRate} 
-            onChange={e => setExchangeRate(e.target.value)} 
+            onChange={e => {
+              let val = e.target.value;
+              if (val.includes('.')) {
+                const parts = val.split('.');
+                if (parts[1].length > 2) val = parts[0] + '.' + parts[1].slice(0, 2);
+              }
+              setExchangeRate(val);
+            }} 
             style={inputStyle} 
             required 
             placeholder="Precio del dólar al momento de la operación"
@@ -243,16 +261,6 @@ export default function TransactionForm({ onTransactionAdded, exchangeRates }) {
             style={inputStyle} 
             placeholder="Broker, exchange o entidad en donde se realizó la transacción" 
             required
-          />
-        </div>
-
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label className="summary-label">Notas</label>
-          <textarea 
-            value={notes} 
-            onChange={e => setNotes(e.target.value)} 
-            style={{...inputStyle, resize: 'vertical', minHeight: '60px'}} 
-            placeholder="Comentarios o información útil relacionada a la transacción"
           />
         </div>
 

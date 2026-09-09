@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import es from '../locales/es.json';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function Auth({ onLogin }) {
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ export default function Auth({ onLogin }) {
   const [error, setError] = useState('');
   const [needsVerification, setNeedsVerification] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [name, setName] = useState('');
@@ -62,6 +64,8 @@ export default function Auth({ onLogin }) {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       if (isLogin) {
         const formData = new URLSearchParams();
@@ -97,16 +101,21 @@ export default function Auth({ onLogin }) {
       } else {
         setError(err.response?.data?.detail || t.defaultError);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResendVerification = async () => {
+    setIsResending(true);
     try {
       await api.post('/resend-verification', { email });
       setError(t.emailSent);
       setNeedsVerification(false);
     } catch (err) {
       setError(t.defaultError);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -121,9 +130,25 @@ export default function Auth({ onLogin }) {
           <button 
             type="button" 
             onClick={handleResendVerification}
-            style={{ width: '100%', marginBottom: '1.5rem', padding: '0.75rem', background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            disabled={isResending}
+            style={{ 
+              width: '100%', 
+              marginBottom: '1.5rem', 
+              padding: '0.75rem', 
+              background: 'transparent', 
+              color: 'var(--accent)', 
+              border: '1px solid var(--accent)', 
+              borderRadius: '4px', 
+              cursor: isResending ? 'not-allowed' : 'pointer', 
+              fontWeight: 'bold',
+              opacity: isResending ? 0.7 : 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '46px'
+            }}
           >
-            {t.resendEmail}
+            {isResending ? <Loader2 className="animate-spin" size={20} /> : t.resendEmail}
           </button>
         )}
         
@@ -254,8 +279,26 @@ export default function Auth({ onLogin }) {
             </div>
           )}
           
-          <button type="submit" style={{ padding: '0.75rem', background: 'var(--accent)', color: 'var(--bg-main)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '1rem' }}>
-            {isLogin ? t.loginButton : t.registerButton}
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            style={{ 
+              padding: '0.75rem', 
+              background: 'var(--accent)', 
+              color: 'var(--bg-main)', 
+              border: 'none', 
+              borderRadius: '4px', 
+              cursor: isLoading ? 'not-allowed' : 'pointer', 
+              fontWeight: 'bold', 
+              marginTop: '1rem',
+              opacity: isLoading ? 0.7 : 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '46px' // Keep height consistent when spinner appears
+            }}
+          >
+            {isLoading ? <Loader2 className="animate-spin" size={20} /> : (isLogin ? t.loginButton : t.registerButton)}
           </button>
         </form>
         

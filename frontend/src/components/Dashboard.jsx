@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark, Upload } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark, Upload, Download } from 'lucide-react';
 import { AreaChart, Area, YAxis } from 'recharts';
 import api from '../api';
 import TransactionForm from './TransactionForm';
@@ -34,8 +34,7 @@ const formatQuantity = (value, ticker) => {
   }
 
   if (isCrypto) {
-    const maxDigits = (ticker === 'BTC' || ticker === 'ETH') ? 8 : (value > 1 ? 4 : 8);
-    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: maxDigits }).format(value);
+    return new Intl.NumberFormat('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 8 }).format(value);
   }
 
   // Equities / ETFs
@@ -250,6 +249,61 @@ export default function Dashboard({ currency }) {
       setError('Error al cargar los datos. Intenta iniciar sesión nuevamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await api.get('/transactions');
+      const transactions = response.data;
+
+      if (!transactions || transactions.length === 0) {
+        alert('No hay transacciones para exportar.');
+        return;
+      }
+
+      const EXPECTED_HEADERS = [
+        "Fecha",
+        "Activo",
+        "Tipo",
+        "Cantidad",
+        "Precio unitario",
+        "Divisa operada",
+        "Plataforma"
+      ];
+
+      let csvContent = EXPECTED_HEADERS.join(',') + '\n';
+
+      transactions.forEach(tx => {
+        const dateObj = new Date(tx.timestamp);
+        const day = String(dateObj.getUTCDate()).padStart(2, '0');
+        const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+        const year = dateObj.getUTCFullYear();
+        const hours = String(dateObj.getUTCHours()).padStart(2, '0');
+        const minutes = String(dateObj.getUTCMinutes()).padStart(2, '0');
+
+        const fecha = `${day}/${month}/${year} ${hours}:${minutes}`;
+        const activo = tx.ticker || '';
+        const tipo = tx.type || '';
+        const cantidad = Number(tx.quantity) || 0;
+        const precio = Number(tx.price_per_unit) || 0;
+        const divisa = tx.operated_currency || 'USD';
+        const plataforma = tx.platform || '';
+
+        csvContent += `${fecha},${activo},${tipo},${cantidad},${precio},${divisa},${plataforma}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'transactions.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error exportando CSV:', err);
+      alert('Hubo un error al exportar las transacciones.');
     }
   };
 
@@ -476,13 +530,13 @@ export default function Dashboard({ currency }) {
                   const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
 
                   return (
-                    <div 
-                      key={asset.ticker} 
+                    <div
+                      key={asset.ticker}
                       onClick={() => navigateTo('portfolio_asset_detalle', asset)}
-                      style={{ 
-                        background: 'var(--bg-card)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: 'var(--radius-md)', 
+                      style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-md)',
                         padding: '1rem',
                         marginBottom: '1rem',
                         cursor: 'pointer',
@@ -601,13 +655,13 @@ export default function Dashboard({ currency }) {
             }).map(asset => {
               const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
               return (
-                <div 
-                  key={asset.ticker} 
+                <div
+                  key={asset.ticker}
                   onClick={() => handleAssetClick(asset)}
-                  style={{ 
-                    background: 'var(--bg-card)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: 'var(--radius-md)', 
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)',
                     padding: '1rem',
                     marginBottom: '1rem',
                     cursor: 'pointer',
@@ -634,7 +688,7 @@ export default function Dashboard({ currency }) {
                   </div>
 
                   <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', height: '60px' }}>
-                     <Sparkline data={assetsHistory[asset.ticker]} dataKey={isArs ? 'price_ars' : 'price_usd'} />
+                    <Sparkline data={assetsHistory[asset.ticker]} dataKey={isArs ? 'price_ars' : 'price_usd'} />
                   </div>
                 </div>
               )
@@ -688,7 +742,10 @@ export default function Dashboard({ currency }) {
           />
         ) : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '10px' }}>
+              <button className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Download size={18} /> Exportar CSV
+              </button>
               <button className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Upload size={18} /> Importar CSV
               </button>

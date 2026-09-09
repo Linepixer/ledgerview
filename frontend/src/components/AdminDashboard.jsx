@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserX, UserCheck, Trash2, Shield, AlertTriangle } from 'lucide-react';
+import { UserX, UserCheck, Trash2, Shield, AlertTriangle, Loader2 } from 'lucide-react';
 import api from '../api';
 import CorporateEventsManager from './CorporateEventsManager';
 
@@ -135,9 +135,9 @@ export default function AdminDashboard({ user }) {
                     </td>
                     <td data-label="Acciones" style={{ padding: '15px 20px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        
+
                         {/* Custom Toggle Switch for Active/Inactive */}
-                        <div 
+                        <div
                           onClick={() => !u.is_admin && setConfirmToggle(u)}
                           title={u.is_active ? 'Desactivar cuenta' : 'Activar cuenta'}
                           style={{
@@ -202,7 +202,7 @@ export default function AdminDashboard({ user }) {
       {/* Toggle Status Modal */}
       {confirmToggle && (
         <div className="modal-overlay" onClick={() => !actionLoading && setConfirmToggle(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', padding: '1.5rem' }}>
             <h2 style={{ marginTop: 0 }}>Confirmar Acción</h2>
             <p>¿Estás seguro que deseas <strong>{confirmToggle.is_active ? 'desactivar' : 'activar'}</strong> la cuenta de <strong>{confirmToggle.email}</strong>?</p>
             {confirmToggle.is_active && (
@@ -221,10 +221,10 @@ export default function AdminDashboard({ user }) {
       {/* Delete Request Modal */}
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => !actionLoading && setConfirmDelete(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--loss)', marginBottom: '15px' }}>
               <AlertTriangle size={24} />
-              <h2 style={{ margin: 0 }}>Solicitar Borrado</h2>
+              <h2 style={{ margin: 0 }}>Eliminar cuenta</h2>
             </div>
 
             {deleteMessage ? (
@@ -246,9 +246,14 @@ export default function AdminDashboard({ user }) {
                     border: 'none',
                     borderRadius: '4px',
                     fontWeight: 'bold',
-                    cursor: 'pointer'
+                    cursor: actionLoading ? 'not-allowed' : 'pointer',
+                    opacity: actionLoading ? 0.7 : 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '42px'
                   }}>
-                    {actionLoading ? 'Enviando...' : 'Enviar Correo'}
+                    {actionLoading ? <Loader2 className="animate-spin" size={20} /> : 'Enviar correo'}
                   </button>
                 </div>
               </>

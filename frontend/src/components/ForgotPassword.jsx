@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import api from '../api';
 import es from '../locales/es.json';
 
@@ -60,8 +60,17 @@ export default function ForgotPassword({ onSwitchToLogin }) {
               />
             </div>
             
-            <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.85rem' }} disabled={loading}>
-              {loading ? '...' : t.sendEmail}
+            <button type="submit" className="btn-primary" style={{ 
+              marginTop: '0.5rem', 
+              padding: '0.85rem',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '48px'
+            }} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" size={20} /> : t.sendEmail}
             </button>
           </form>
         )}

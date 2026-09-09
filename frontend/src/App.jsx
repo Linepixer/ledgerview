@@ -7,6 +7,8 @@ import ResetPassword from './components/ResetPassword'
 import AccountMenu from './components/AccountMenu'
 import AdminDashboard from './components/AdminDashboard'
 import DeleteAccountConfirm from './components/DeleteAccountConfirm'
+import AccountSettings from './components/AccountSettings'
+import UserDeleteAccountConfirm from './components/UserDeleteAccountConfirm'
 import api from './api'
 import './index.css'
 
@@ -65,10 +67,14 @@ function App() {
     }
   }
 
-  const handleLogout = () => {
+  const clearSession = () => {
     localStorage.removeItem('token')
     setIsAuthenticated(false)
     setUser(null)
+  }
+
+  const handleLogout = () => {
+    clearSession()
     navigate('/login', { replace: true })
   }
 
@@ -113,6 +119,7 @@ function App() {
         
         <Routes>
           <Route path="/reset-password" element={<ResetPassword onLogin={onLoginSuccess} />} />
+          <Route path="/account/delete-confirm" element={<UserDeleteAccountConfirm onAccountDeleted={clearSession} />} />
           
           {isAuthenticated ? (
             <>
@@ -128,6 +135,8 @@ function App() {
               
               <Route path="/transactions" element={<Dashboard currency={currency} />} />
               <Route path="/transactions/import" element={<Dashboard currency={currency} />} />
+              
+              <Route path="/account" element={<AccountSettings user={user} onLogout={handleLogout} />} />
               
               <Route path="*" element={<Navigate to="/" replace />} />
             </>

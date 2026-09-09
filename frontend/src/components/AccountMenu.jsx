@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, KeyRound, ChevronDown } from 'lucide-react';
+import { User, LogOut, KeyRound, ChevronDown, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ChangePasswordModal from './ChangePasswordModal';
 
@@ -54,6 +54,30 @@ export default function AccountMenu({ user, onLogout }) {
             zIndex: 100,
             overflow: 'hidden'
           }}>
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/account');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                width: '100%',
+                padding: '0.75rem 1rem',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: 'none',
+                color: 'var(--text-main)',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-main)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <Settings size={16} className="text-muted" />
+              Mi cuenta
+            </button>
             <button
               onClick={() => {
                 setIsOpen(false);
