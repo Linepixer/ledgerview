@@ -531,7 +531,7 @@ export default function Dashboard({ currency }) {
                         >
                           <td>
                             <div className="font-semibold">{asset.ticker}</div>
-                            <div className="text-muted" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
+                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
                           </td>
                           <td className="text-right font-semibold">
                             {formatQuantity(asset.quantity, asset.ticker)}
@@ -588,7 +588,7 @@ export default function Dashboard({ currency }) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{asset.ticker}</span>
-                          <span className="text-muted" style={{ fontSize: '0.85rem', maxWidth: '160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</span>
+                          <span className="text-muted" style={{ fontSize: '0.85rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                           <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{formatCurrency(value, currency)}</span>

@@ -78,6 +78,7 @@ h1, h2, h3, h4 {
 
 main {
   flex: 1;
+  padding-bottom: 2rem;
 }
 
 header {
