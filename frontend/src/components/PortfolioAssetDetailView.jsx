@@ -36,7 +36,7 @@ export default function PortfolioAssetDetailView({ asset, currency, onBack, onGo
       currency: currency,
       minimumFractionDigits: isArs ? 0 : 2,
       maximumFractionDigits: isArs ? 0 : 2,
-    }).format(value);
+    }).format(value).replace('US$', 'USD');
   };
 
   const formatCrypto = (value) => {

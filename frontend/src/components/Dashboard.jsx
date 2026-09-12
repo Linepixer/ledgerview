@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark, Upload, Download } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Plus, X, Bitcoin, DollarSign, LineChart as LineChartIcon, Coins, Landmark, Upload, Download, HelpCircle } from 'lucide-react';
 import { AreaChart, Area, YAxis } from 'recharts';
 import api from '../api';
 import TransactionForm from './TransactionForm';
 import TransactionsList from './TransactionsList';
 import MonthlyInvestmentWidget from './MonthlyInvestmentWidget';
+import PassiveIncomeWidget from './PassiveIncomeWidget';
+import CompoundInterestWidget from './CompoundInterestWidget';
 import PieChartComponent from './PieChartComponent';
 import PortfolioChart from './PortfolioChart';
 import AssetDetailView from './AssetDetailView';
@@ -20,7 +22,7 @@ const formatCurrency = (value, currency) => {
     currency: currency,
     minimumFractionDigits: currency === 'USD' ? 2 : 0,
     maximumFractionDigits: currency === 'USD' ? 2 : 0,
-  }).format(value);
+  }).format(value).replace('US$', 'USD');
 };
 
 const formatQuantity = (value, ticker) => {
@@ -411,7 +413,15 @@ export default function Dashboard({ currency }) {
           <div className="main-column">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
             <div>
-              <div className="summary-label" style={{ marginBottom: '0.5rem' }}>Patrimonio Total</div>
+              <div className="summary-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                Patrimonio Total
+                <div className="tooltip-container">
+                  <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
+                  <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-10%)', width: '250px' }}>
+                    La suma total del valor actual de todos tus activos convertida a la moneda que tenés seleccionada. Representa tu riqueza neta.
+                  </div>
+                </div>
+              </div>
               <div className="flex-row" style={{ flexWrap: 'wrap' }}>
                 <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
                 <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: '1rem', padding: '0.2rem 0.6rem' }}>
@@ -455,7 +465,15 @@ export default function Dashboard({ currency }) {
           ) : (
             <>
               <div className="card" style={{ marginBottom: '1rem' }}>
-                <h3 style={{ marginBottom: '1.5rem' }}>Distribución de Activos</h3>
+                <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  Distribución de Activos
+                  <div className="tooltip-container">
+                    <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
+                    <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-10%)', width: '250px', fontWeight: 'normal' }}>
+                      Muestra cómo está diversificado tu dinero. Mantener una buena diversificación ayuda a reducir el riesgo de tu portafolio.
+                    </div>
+                  </div>
+                </h3>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1', minWidth: '300px', maxWidth: '400px' }}>
                     <PieChartComponent data={portfolio.assets} />
@@ -469,8 +487,10 @@ export default function Dashboard({ currency }) {
               <XirrCard portfolio={portfolio} isArs={isArs} />
 
               {isMobile && (
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <MonthlyInvestmentWidget currency={currency} />
+                  <PassiveIncomeWidget currency={currency} />
+                  <CompoundInterestWidget portfolio={portfolio} currency={currency} />
                 </div>
               )}
 
@@ -591,8 +611,10 @@ export default function Dashboard({ currency }) {
           )}
           </div>
           {!isMobile && (
-            <div className="sidebar-column">
+            <div className="sidebar-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <MonthlyInvestmentWidget currency={currency} />
+              <PassiveIncomeWidget currency={currency} />
+              <CompoundInterestWidget portfolio={portfolio} currency={currency} />
             </div>
           )}
         </div>

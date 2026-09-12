@@ -59,7 +59,7 @@ export default function AssetDetailView({ asset, currency, onBack }) {
       currency: currency,
       minimumFractionDigits: isArs ? 0 : 2,
       maximumFractionDigits: isArs ? 0 : 2,
-    }).format(value);
+    }).format(value).replace('US$', 'USD');
   };
 
   let color = 'var(--accent)';

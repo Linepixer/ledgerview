@@ -14,7 +14,7 @@ export default function CategoryProgressBars({ data, currency }) {
       currency: currency,
       minimumFractionDigits: currency === 'USD' ? 2 : 0,
       maximumFractionDigits: currency === 'USD' ? 2 : 0,
-    }).format(value);
+    }).format(value).replace('US$', 'USD');
   };
 
   return (

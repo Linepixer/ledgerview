@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Calendar, ArrowRight } from 'lucide-react';
+import { TrendingUp, Calendar, ArrowRight, HelpCircle } from 'lucide-react';
 import api from '../api';
 
 export default function MonthlyInvestmentWidget({ currency }) {
@@ -69,7 +69,7 @@ export default function MonthlyInvestmentWidget({ currency }) {
       currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(val);
+    }).format(val).replace('US$', 'USD');
   };
 
   // Últimos 6 meses para la vista resumida (ordenados descendente para la tablita, de más nuevo a más viejo)
@@ -98,6 +98,12 @@ export default function MonthlyInvestmentWidget({ currency }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
           <TrendingUp size={16} color="var(--text-muted)" />
           <h3 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ritmo de Inversión</h3>
+          <div className="tooltip-container">
+            <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
+            <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-20%)', width: '250px' }}>
+              Mide el promedio de capital fresco que inyectás mensualmente a tu portafolio. Es el motor principal de tu riqueza a largo plazo.
+            </div>
+          </div>
         </div>
 
         <div style={{ paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, HelpCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function XirrCard({ portfolio, isArs }) {
@@ -25,7 +25,15 @@ export default function XirrCard({ portfolio, isArs }) {
     <div className="card" style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Rendimiento anualizado</h3>
+          <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Rendimiento anualizado
+            <div className="tooltip-container">
+              <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
+              <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-10%)', width: '250px', fontWeight: 'normal' }}>
+                Mide tu tasa real de ganancia (TIR) teniendo en cuenta exactamente en qué fecha hiciste tus aportes de capital y por qué monto.
+              </div>
+            </div>
+          </h3>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Tasa efectiva anual calculada
           </div>

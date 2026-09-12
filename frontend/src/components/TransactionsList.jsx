@@ -12,7 +12,7 @@ const formatCurrency = (value, currency) => {
     currency: validCurrency,
     minimumFractionDigits: validCurrency === 'USD' ? 2 : 0,
     maximumFractionDigits: validCurrency === 'USD' ? 2 : 0,
-  }).format(value);
+  }).format(value).replace('US$', 'USD');
 };
 
 const formatQuantity = (value, ticker) => {
