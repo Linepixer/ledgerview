@@ -15,7 +15,7 @@ export default function MonthlyInvestmentWidget({ currency }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/transactions');
+      const res = await api.get('/transactions/');
       const transactions = res.data;
 
       // Agrupar por mes (YYYY-MM)

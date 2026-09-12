@@ -262,7 +262,7 @@ export default function Dashboard({ currency }) {
 
   const handleExportCSV = async () => {
     try {
-      const response = await api.get('/transactions');
+      const response = await api.get('/transactions/');
       const transactions = response.data;
 
       if (!transactions || transactions.length === 0) {
