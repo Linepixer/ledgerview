@@ -101,8 +101,8 @@ export default function XirrCard({ portfolio, isArs }) {
           })}
         </div>
       ) : (
-        <div className="text-muted" style={{ textAlign: 'center', padding: '1rem' }}>
-          No hay suficientes datos para calcular el XIRR por activo.
+        <div className="text-muted" style={{ fontSize: '0.9rem', textAlign: 'center', padding: '2rem 1rem' }}>
+          Registra compras y ventas para calcular tu Tasa Interna de Retorno (TIR).
         </div>
       )}
     </div>

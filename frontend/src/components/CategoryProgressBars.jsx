@@ -17,9 +17,16 @@ export default function CategoryProgressBars({ data, currency }) {
     }).format(value).replace('US$', 'USD');
   };
 
+  const displayData = data && data.length > 0 ? data : [
+    { type: 'Moneda Fiat', value: 0, percentage: 0 },
+    { type: 'ETFs', value: 0, percentage: 0 },
+    { type: 'Criptomonedas', value: 0, percentage: 0 },
+    { type: 'Acciones', value: 0, percentage: 0 },
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', padding: '0' }}>
-      {data.map((cat, index) => {
+      {displayData.map((cat, index) => {
         const color = 'var(--profit)';
         // Create a subtle fade effect so not all bars are equally bright
         const opacity = Math.max(0.4, 1 - (index * 0.2));

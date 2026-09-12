@@ -458,12 +458,7 @@ export default function Dashboard({ currency }) {
             </div>
           </div>
 
-          {portfolio.assets.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <div className="text-muted">Aún no tienes activos en tu portafolio. Agrega tu primera transacción.</div>
-            </div>
-          ) : (
-            <>
+          <>
               <div className="card" style={{ marginBottom: '1rem' }}>
                 <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   Distribución de Activos
@@ -509,11 +504,18 @@ export default function Dashboard({ currency }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...portfolio.assets].sort((a, b) => {
-                      const valA = isArs ? a.total_value_ars : a.total_value_usd;
-                      const valB = isArs ? b.total_value_ars : b.total_value_usd;
-                      return valB - valA;
-                    }).map(asset => {
+                    {portfolio.assets.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                          <div className="text-muted">Aún no tienes activos en tu portafolio. Agrega tu primera transacción para comenzar a medir tu rendimiento.</div>
+                        </td>
+                      </tr>
+                    ) : (
+                      [...portfolio.assets].sort((a, b) => {
+                        const valA = isArs ? a.total_value_ars : a.total_value_usd;
+                        const valB = isArs ? b.total_value_ars : b.total_value_usd;
+                        return valB - valA;
+                      }).map(asset => {
                       const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
                       const avgPrice = isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd;
                       const value = isArs ? asset.total_value_ars : asset.total_value_usd;
@@ -548,18 +550,23 @@ export default function Dashboard({ currency }) {
                           <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
                         </tr>
                       )
-                    })}
+                    }))}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards View */}
               <div className="hide-on-desktop">
-                {[...portfolio.assets].sort((a, b) => {
-                  const valA = isArs ? a.total_value_ars : a.total_value_usd;
-                  const valB = isArs ? b.total_value_ars : b.total_value_usd;
-                  return valB - valA;
-                }).map(asset => {
+                {portfolio.assets.length === 0 ? (
+                  <div className="card" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                    <div className="text-muted">Aún no tienes activos en tu portafolio. Agrega tu primera transacción.</div>
+                  </div>
+                ) : (
+                  [...portfolio.assets].sort((a, b) => {
+                    const valA = isArs ? a.total_value_ars : a.total_value_usd;
+                    const valB = isArs ? b.total_value_ars : b.total_value_usd;
+                    return valB - valA;
+                  }).map(asset => {
                   const value = isArs ? asset.total_value_ars : asset.total_value_usd;
                   const profit = isArs ? asset.potential_profit_ars : asset.potential_profit_usd;
                   const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
@@ -605,10 +612,9 @@ export default function Dashboard({ currency }) {
                       </div>
                     </div>
                   )
-                })}
+                }))}
               </div>
             </>
-          )}
           </div>
           {!isMobile && (
             <div className="sidebar-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

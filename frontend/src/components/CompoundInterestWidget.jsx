@@ -61,11 +61,10 @@ export default function CompoundInterestWidget({ portfolio, currency }) {
 
   if (loading || !portfolio) return null;
 
-  const currentCapital = currency === 'ARS' ? (portfolio?.total_value_ars || 0) : (portfolio?.total_value_usd || 0);
-  let globalXirr = currency === 'ARS' ? (portfolio?.xirr_ars || 0) : (portfolio?.xirr_usd || 0);
-  
-  // Si no hay suficiente capital, mostramos un estado vacío
-  if (currentCapital <= 0) return null;
+  const isArs = currency === 'ARS';
+  const currentCapital = isArs ? (portfolio?.total_value_ars || 0) : (portfolio?.total_value_usd || 0);
+  let globalXirr = isArs ? (portfolio?.xirr_ars || 0) : (portfolio?.xirr_usd || 0);
+  const isEmpty = currentCapital <= 0;
   
   // Asumimos un mínimo rendimiento conservador si el xirr es negativo o no existe, solo para proyectar algo optimista pero realista
   if (globalXirr <= 0) globalXirr = 5; // 5% por defecto para al menos mostrar el concepto
@@ -118,17 +117,23 @@ export default function CompoundInterestWidget({ portfolio, currency }) {
       </div>
 
       <div style={{ marginTop: '0.25rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          {milestones.map(item => (
-            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Clock size={12} className="text-muted" />
-                <span style={{ fontSize: '0.85rem' }}>En {item.label}</span>
+        {isEmpty ? (
+          <div className="text-muted" style={{ fontSize: '0.8rem', textAlign: 'center', padding: '1rem 0' }}>
+            Ingresa capital y transacciones para proyectar el crecimiento de tus inversiones a futuro.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {milestones.map((milestone, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Clock size={12} className="text-muted" />
+                  <span style={{ fontSize: '0.85rem' }}>{milestone.label}</span>
+                </div>
+                <span className="font-semibold" style={{ fontSize: '0.85rem' }}>{formatCurrency(milestone.value)}</span>
               </div>
-              <span className="font-semibold" style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>{formatCurrency(item.value)}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

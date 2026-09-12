@@ -22,9 +22,8 @@ export default function PieChartComponent({ data }) {
     }))
     .sort((a, b) => b.value - a.value);
 
-  if (chartData.length === 0) {
-    return <div className="text-muted" style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>Sin datos suficientes</div>;
-  }
+  const isEmpty = chartData.length === 0;
+  const dataToRender = isEmpty ? [{ name: 'Sin datos', value: 100 }] : chartData;
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -36,7 +35,7 @@ export default function PieChartComponent({ data }) {
           </filter>
         </defs>
         <Pie
-          data={chartData}
+          data={dataToRender}
           cx="50%"
           cy="50%"
           innerRadius={80}
@@ -46,16 +45,25 @@ export default function PieChartComponent({ data }) {
           stroke="none"
           filter="url(#pieGlow)"
         >
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={TICKER_COLORS[entry.name] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+          {dataToRender.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={isEmpty ? 'rgba(255,255,255,0.05)' : (TICKER_COLORS[entry.name] || DEFAULT_COLORS[index % DEFAULT_COLORS.length])} />
           ))}
         </Pie>
-        <Tooltip
-          formatter={(value) => `${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
-          contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fafafa' }}
-          itemStyle={{ color: '#fafafa' }}
-        />
-        <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '12px' }} />
+        {!isEmpty && (
+          <Tooltip
+            formatter={(value) => `${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
+            contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fafafa' }}
+            itemStyle={{ color: '#fafafa' }}
+          />
+        )}
+        {!isEmpty && (
+          <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '12px' }} />
+        )}
+        {isEmpty && (
+          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="var(--text-muted)" fontSize="14px">
+            Sin datos
+          </text>
+        )}
       </PieChart>
     </ResponsiveContainer>
   );

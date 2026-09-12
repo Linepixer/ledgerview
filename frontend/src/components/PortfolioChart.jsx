@@ -4,16 +4,19 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function PortfolioChart({ data, isArs }) {
   const [timeRange, setTimeRange] = useState('MAX');
 
-  if (!data || data.length === 0) {
-    return (
-      <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-        No hay suficientes datos históricos para mostrar el gráfico.
-      </div>
-    );
-  }
+  const isEmpty = !data || data.length === 0;
+
+  const chartData = isEmpty ? [
+    { date: '2024-01-01', total_value_usd: 0, total_value_ars: 0 },
+    { date: '2024-02-01', total_value_usd: 0, total_value_ars: 0 },
+    { date: '2024-03-01', total_value_usd: 0, total_value_ars: 0 },
+    { date: '2024-04-01', total_value_usd: 0, total_value_ars: 0 },
+    { date: '2024-05-01', total_value_usd: 0, total_value_ars: 0 },
+    { date: '2024-06-01', total_value_usd: 0, total_value_ars: 0 }
+  ] : data;
 
   const filteredData = useMemo(() => {
-    if (timeRange === 'MAX') return data;
+    if (timeRange === 'MAX') return chartData;
     
     const now = new Date();
     let targetDate = new Date();
@@ -24,10 +27,10 @@ export default function PortfolioChart({ data, isArs }) {
     if (timeRange === '1A') targetDate.setFullYear(now.getFullYear() - 1);
     
     const targetString = targetDate.toISOString().split('T')[0];
-    const filtered = data.filter(d => d.date >= targetString);
+    const filtered = chartData.filter(d => d.date >= targetString);
     
-    return filtered.length >= 2 ? filtered : data.slice(-2);
-  }, [data, timeRange]);
+    return filtered.length >= 2 ? filtered : chartData.slice(-2);
+  }, [chartData, timeRange]);
 
   const dataKey = isArs ? 'total_value_ars' : 'total_value_usd';
   
@@ -35,7 +38,7 @@ export default function PortfolioChart({ data, isArs }) {
   const firstValue = filteredData[0][dataKey];
   const lastValue = filteredData[filteredData.length - 1][dataKey];
   const isProfit = lastValue >= firstValue;
-  const color = isProfit ? 'var(--profit)' : 'var(--loss)';
+  const color = isEmpty ? 'var(--profit)' : (isProfit ? 'var(--profit)' : 'var(--loss)');
 
   return (
     <div style={{ width: '100%', height: 330, marginTop: '1rem' }}>
@@ -89,26 +92,28 @@ export default function PortfolioChart({ data, isArs }) {
             width={1}
             mirror={false}
           />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'var(--bg-card)', 
-              border: '1px solid var(--border)', 
-              borderRadius: '8px', 
-              color: 'var(--text-main)',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
-            }}
-            itemStyle={{ color: 'var(--text-main)', fontWeight: 'bold' }}
-            formatter={(value) => [
-              new Intl.NumberFormat('es-AR', {
-                style: 'currency',
-                currency: isArs ? 'ARS' : 'USD',
-                minimumFractionDigits: isArs ? 0 : 2,
-                maximumFractionDigits: isArs ? 0 : 2
-              }).format(value), 
-              'Patrimonio Total'
-            ]}
-            labelStyle={{ color: 'var(--text-muted)', marginBottom: '5px' }}
-          />
+          {!isEmpty && (
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'var(--bg-card)', 
+                border: '1px solid var(--border)', 
+                borderRadius: '8px', 
+                color: 'var(--text-main)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
+              }}
+              itemStyle={{ color: 'var(--text-main)', fontWeight: 'bold' }}
+              formatter={(value) => [
+                new Intl.NumberFormat('es-AR', {
+                  style: 'currency',
+                  currency: isArs ? 'ARS' : 'USD',
+                  minimumFractionDigits: isArs ? 0 : 2,
+                  maximumFractionDigits: isArs ? 0 : 2
+                }).format(value), 
+                'Patrimonio Total'
+              ]}
+              labelStyle={{ color: 'var(--text-muted)', marginBottom: '5px' }}
+            />
+          )}
           <Area 
             type="monotone" 
             dataKey={dataKey} 

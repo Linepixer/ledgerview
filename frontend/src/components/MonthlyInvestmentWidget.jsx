@@ -83,9 +83,7 @@ export default function MonthlyInvestmentWidget({ currency }) {
     );
   }
 
-  if (data.length === 0) {
-    return null; // No mostrar nada si no hay inversiones
-  }
+  const isEmpty = data.length === 0;
 
   // Stats para el modal
   const totalAmount = data.reduce((acc, curr) => acc + curr.amount, 0);
@@ -115,43 +113,51 @@ export default function MonthlyInvestmentWidget({ currency }) {
 
         <div style={{ marginTop: '0.25rem' }}>
           <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>Últimos 6 meses</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            {recentData.map(item => (
-              <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Calendar size={12} className="text-muted" />
-                  <span style={{ fontSize: '0.85rem', textTransform: 'capitalize' }}>{item.label}</span>
+          {isEmpty ? (
+            <div className="text-muted" style={{ fontSize: '0.8rem', textAlign: 'center', padding: '1rem 0' }}>
+              Aún no hay compras registradas. Comenzá a invertir para medir tu ritmo.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {recentData.map(item => (
+                <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Calendar size={12} className="text-muted" />
+                    <span style={{ fontSize: '0.85rem', textTransform: 'capitalize' }}>{item.label}</span>
+                  </div>
+                  <span className="font-semibold" style={{ fontSize: '0.85rem' }}>{formatCurrency(item.amount)}</span>
                 </div>
-                <span className="font-semibold" style={{ fontSize: '0.85rem' }}>{formatCurrency(item.amount)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          style={{ 
-            marginTop: '0.5rem', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'flex-start', 
-            gap: '0.5rem',
-            padding: '0.5rem 0', 
-            background: 'transparent', 
-            border: 'none', 
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            fontSize: '0.8rem'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-main)'}
-          onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-        >
-          Ver todo el histórico <ArrowRight size={16} />
-        </button>
+        {!isEmpty && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            style={{ 
+              marginTop: '0.5rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'flex-start', 
+              gap: '0.5rem',
+              padding: '0.5rem 0', 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontSize: '0.8rem'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-main)'}
+            onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
+            Ver todo el histórico <ArrowRight size={16} />
+          </button>
+        )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && !isEmpty && (
         <div className="modal-overlay" onClick={(e) => { if (e.target.className === 'modal-overlay') setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '600px', padding: '1.5rem', borderRadius: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
