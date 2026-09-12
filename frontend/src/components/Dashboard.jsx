@@ -4,6 +4,7 @@ import { AreaChart, Area, YAxis } from 'recharts';
 import api from '../api';
 import TransactionForm from './TransactionForm';
 import TransactionsList from './TransactionsList';
+import MonthlyInvestmentWidget from './MonthlyInvestmentWidget';
 import PieChartComponent from './PieChartComponent';
 import PortfolioChart from './PortfolioChart';
 import AssetDetailView from './AssetDetailView';
@@ -162,9 +163,16 @@ export default function Dashboard({ currency }) {
   const [isImporting, setIsImporting] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [refreshTransactions, setRefreshTransactions] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Browser history synchronization
   useEffect(() => {
@@ -399,7 +407,8 @@ export default function Dashboard({ currency }) {
       </div>
 
       {activeTab === 'portfolio' && (
-        <>
+        <div className="dashboard-layout">
+          <div className="main-column">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
             <div>
               <div className="summary-label" style={{ marginBottom: '0.5rem' }}>Patrimonio Total</div>
@@ -458,6 +467,12 @@ export default function Dashboard({ currency }) {
               </div>
 
               <XirrCard portfolio={portfolio} isArs={isArs} />
+
+              {isMobile && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <MonthlyInvestmentWidget currency={currency} />
+                </div>
+              )}
 
               <div className="table-container hide-on-mobile">
                 <table>
@@ -574,7 +589,13 @@ export default function Dashboard({ currency }) {
               </div>
             </>
           )}
-        </>
+          </div>
+          {!isMobile && (
+            <div className="sidebar-column">
+              <MonthlyInvestmentWidget currency={currency} />
+            </div>
+          )}
+        </div>
       )}
 
       {activeTab === 'cotizaciones' && (
