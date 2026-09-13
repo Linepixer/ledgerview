@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Trash2, X, Search, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trash2, X, Search, ArrowDown, ArrowUp, ArrowUpDown, Filter } from 'lucide-react';
 import api from '../api';
 
 const formatCurrency = (value, currency) => {
@@ -57,6 +57,7 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [tempDateRange, setTempDateRange] = useState({ start: '', end: '' });
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [sortField, setSortField] = useState('timestamp');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -219,58 +220,58 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
     return (
       <>
         {/* Invisible full-screen overlay to close on click outside */}
-        <div 
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }} 
-          onClick={() => setIsDateModalOpen(false)} 
+        <div
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }}
+          onClick={() => setIsDateModalOpen(false)}
         />
         {/* The actual popover */}
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: 'calc(100% + 8px)', 
-            left: 0, 
-            width: '320px', 
-            background: 'var(--bg-main)', 
-            border: '1px solid var(--border)', 
-            borderRadius: 'var(--radius-lg)', 
-            padding: '1.25rem', 
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: 0,
+            width: '320px',
+            background: 'var(--bg-main)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '1.25rem',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            zIndex: 100 
+            zIndex: 100
           }}
           onClick={e => e.stopPropagation()}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>Desde</label>
-              <input 
-                type="date" 
-                value={tempDateRange.start} 
+              <input
+                type="date"
+                value={tempDateRange.start}
                 onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                onChange={(e) => setTempDateRange({ ...tempDateRange, start: e.target.value })} 
-                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }} 
+                onChange={(e) => setTempDateRange({ ...tempDateRange, start: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }}
               />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>Hasta</label>
-              <input 
-                type="date" 
-                value={tempDateRange.end} 
+              <input
+                type="date"
+                value={tempDateRange.end}
                 onClick={(e) => e.target.showPicker && e.target.showPicker()}
-                onChange={(e) => setTempDateRange({ ...tempDateRange, end: e.target.value })} 
-                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }} 
+                onChange={(e) => setTempDateRange({ ...tempDateRange, end: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <button 
-                className="btn-secondary" 
-                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center' }} 
+              <button
+                className="btn-secondary"
+                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center' }}
                 onClick={() => { setTempDateRange({ start: '', end: '' }); setDateRange({ start: '', end: '' }); setIsDateModalOpen(false); }}
               >
                 Quitar filtro
               </button>
-              <button 
-                className="btn-primary" 
-                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center', backgroundColor: '#e2e8f0', color: '#0f172a' }} 
+              <button
+                className="btn-primary"
+                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center', backgroundColor: '#e2e8f0', color: '#0f172a' }}
                 onClick={() => { setDateRange(tempDateRange); setIsDateModalOpen(false); }}
               >
                 Aplicar
@@ -282,38 +283,88 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
     );
   };
 
+  const activeFiltersCount = (filterTicker !== 'ALL' ? 1 : 0) +
+    (filterType !== 'ALL' ? 1 : 0) +
+    (filterPlatform !== 'ALL' ? 1 : 0) +
+    ((dateRange.start || dateRange.end) ? 1 : 0);
+
   return (
     <>
       {/* Top Action Bar (Filters + Buttons) - Mobile */}
-      <div className="mobile-only-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <div style={{ position: 'relative', width: '100%' }}>
-          <input
-            readOnly
-            onClick={openDateModal}
-            placeholder="Fechas"
-            value={formatRange()}
-            style={filterSelectStyle}
-          />
-          {renderDatePopover()}
-        </div>
-        <select value={filterTicker} onChange={(e) => setFilterTicker(e.target.value)} style={filterSelectStyle}>
-          <option value="ALL">Todos los activos</option>
-          {uniqueTickers.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={filterSelectStyle}>
-          <option value="ALL">Todos los tipos</option>
-          {uniqueTypes.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterPlatform} onChange={(e) => setFilterPlatform(e.target.value)} style={filterSelectStyle}>
-          <option value="ALL">Todas las plataformas</option>
-          {uniquePlatforms.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        {headerActions && (
-          <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-            {headerActions}
-          </div>
-        )}
+      <div className="mobile-only-filters" style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
+        {headerActions && headerActions[1]}
+        <button
+          className="btn-secondary"
+          style={{ flex: 1, padding: '0.75rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          onClick={() => setIsMobileFilterOpen(true)}
+        >
+          <Filter size={18} style={{ flexShrink: 0 }} /> <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeFiltersCount > 0 ? (activeFiltersCount === 1 ? '1 filtro aplicado' : `${activeFiltersCount} filtros aplicados`) : 'Filtrar transacciones'}</span>
+        </button>
+        {headerActions && headerActions[0]}
       </div>
+
+      {/* Mobile Bottom Sheet for Filters */}
+      {isMobileFilterOpen && (
+        <div className="mobile-only-filters" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setIsMobileFilterOpen(false)}>
+          <div style={{ background: 'var(--bg-main)', width: '100%', padding: '1.5rem', borderTopLeftRadius: 'var(--radius-lg)', borderTopRightRadius: 'var(--radius-lg)', boxShadow: '0 -10px 25px rgba(0,0,0,0.5)', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-main)' }}>Filtros</h3>
+              <button onClick={() => setIsMobileFilterOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Desde</label>
+                  <input type="date" value={dateRange.start} onClick={(e) => e.target.showPicker && e.target.showPicker()} onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })} style={{ ...filterSelectStyle, width: '100%' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Hasta</label>
+                  <input type="date" value={dateRange.end} onClick={(e) => e.target.showPicker && e.target.showPicker()} onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })} style={{ ...filterSelectStyle, width: '100%' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Activo</label>
+                <select value={filterTicker} onChange={(e) => setFilterTicker(e.target.value)} style={{ ...filterSelectStyle, width: '100%' }}>
+                  <option value="ALL">Todos los activos</option>
+                  {uniqueTickers.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Tipo de Operación</label>
+                <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={{ ...filterSelectStyle, width: '100%' }}>
+                  <option value="ALL">Todos los tipos</option>
+                  {uniqueTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Plataforma</label>
+                <select value={filterPlatform} onChange={(e) => setFilterPlatform(e.target.value)} style={{ ...filterSelectStyle, width: '100%' }}>
+                  <option value="ALL">Todas las plataformas</option>
+                  {uniquePlatforms.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                <button
+                  className="btn-secondary"
+                  style={{ flex: 1, padding: '0.75rem', justifyContent: 'center' }}
+                  onClick={() => { setDateRange({ start: '', end: '' }); setFilterTicker('ALL'); setFilterType('ALL'); setFilterPlatform('ALL'); setIsMobileFilterOpen(false); }}
+                >
+                  Quitar filtro
+                </button>
+                <button
+                  className="btn-primary"
+                  style={{ flex: 2, padding: '0.75rem', justifyContent: 'center', backgroundColor: '#e2e8f0', color: '#0f172a' }}
+                  onClick={() => setIsMobileFilterOpen(false)}
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Desktop Equal-Width Filters */}
       <div className="hide-on-mobile" style={{
