@@ -319,6 +319,10 @@ input, select, textarea {
   font-family: inherit;
 }
 
+.search-input {
+  padding-left: 2.2rem !important;
+}
+
 input::placeholder, textarea::placeholder {
   color: var(--text-muted) !important;
   opacity: 1;
@@ -636,6 +640,12 @@ input:focus, select:focus, textarea:focus {
 .recharts-surface,
 .recharts-surface:focus {
   outline: none !important;
+}
+
+@media (min-width: 1025px) {
+  .mobile-only-filters {
+    display: none !important;
+  }
 }
 
 @keyframes spin {

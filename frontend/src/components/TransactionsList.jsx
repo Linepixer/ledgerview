@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { RefreshCw, AlertTriangle, Trash2, X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { RefreshCw, AlertTriangle, Trash2, X, Search, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import api from '../api';
 
 const formatCurrency = (value, currency) => {
@@ -42,13 +42,24 @@ const formatDate = (dateString) => {
   }).format(d);
 }
 
-export default function TransactionsList({ currency, onTransactionDeleted, refreshTrigger }) {
+export default function TransactionsList({ currency, onTransactionDeleted, refreshTrigger, headerActions }) {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState('');
 
   const [deletingId, setDeletingId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [filterTicker, setFilterTicker] = useState('ALL');
+  const [filterType, setFilterType] = useState('ALL');
+  const [filterPlatform, setFilterPlatform] = useState('ALL');
+
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [tempDateRange, setTempDateRange] = useState({ start: '', end: '' });
+
+  const [sortField, setSortField] = useState('timestamp');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -84,6 +95,83 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
     }
   };
 
+  const uniqueTickers = useMemo(() => [...new Set(transactions.map(t => t.ticker))].sort(), [transactions]);
+  const uniqueTypes = useMemo(() => [...new Set(transactions.map(t => t.type))].sort(), [transactions]);
+  const uniquePlatforms = useMemo(() => [...new Set(transactions.map(t => t.platform).filter(Boolean))].sort(), [transactions]);
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(tx => {
+      if (filterTicker !== 'ALL' && tx.ticker !== filterTicker) return false;
+      if (filterType !== 'ALL' && tx.type !== filterType) return false;
+      if (filterPlatform !== 'ALL' && (tx.platform || '') !== filterPlatform) return false;
+
+      if (dateRange.start || dateRange.end) {
+        const txDate = new Date(tx.timestamp).getTime();
+
+        if (dateRange.start) {
+          const startDate = new Date(dateRange.start);
+          startDate.setHours(0, 0, 0, 0);
+          if (txDate < startDate.getTime()) return false;
+        }
+
+        if (dateRange.end) {
+          const endDate = new Date(dateRange.end);
+          endDate.setHours(23, 59, 59, 999);
+          if (txDate > endDate.getTime()) return false;
+        }
+      }
+      return true;
+    }).sort((a, b) => {
+      let valA, valB;
+      switch (sortField) {
+        case 'timestamp':
+          valA = new Date(a.timestamp).getTime();
+          valB = new Date(b.timestamp).getTime();
+          break;
+        case 'ticker':
+          valA = a.ticker;
+          valB = b.ticker;
+          break;
+        case 'type':
+          valA = a.type;
+          valB = b.type;
+          break;
+        case 'quantity':
+          valA = a.quantity;
+          valB = b.quantity;
+          break;
+        case 'price':
+          valA = a.price_per_unit;
+          valB = b.price_per_unit;
+          break;
+        case 'total':
+          valA = a.total_value;
+          valB = b.total_value;
+          break;
+        default:
+          valA = new Date(a.timestamp).getTime();
+          valB = new Date(b.timestamp).getTime();
+      }
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [transactions, filterTicker, filterType, filterPlatform, dateRange, sortField, sortDirection]);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <ArrowUpDown size={12} style={{ opacity: 0.3, marginLeft: '4px' }} />;
+    return sortDirection === 'asc' ? <ArrowUp size={12} style={{ marginLeft: '4px' }} /> : <ArrowDown size={12} style={{ marginLeft: '4px' }} />;
+  };
+
   if (loading && transactions.length === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
@@ -97,31 +185,197 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
     return <div className="text-loss flex-row" style={{ justifyContent: 'center', marginTop: '100px' }}><AlertTriangle /> {error}</div>;
   }
 
+  const formatShortDate = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return `${day} ${months[parseInt(month, 10) - 1]}`;
+  };
+
+  const formatRange = () => {
+    if (dateRange.start && dateRange.end) return `${formatShortDate(dateRange.start)} al ${formatShortDate(dateRange.end)}`;
+    if (dateRange.start) return `Desde ${formatShortDate(dateRange.start)}`;
+    if (dateRange.end) return `Hasta ${formatShortDate(dateRange.end)}`;
+    return '';
+  };
+
+  const openDateModal = () => {
+    setTempDateRange(dateRange);
+    setIsDateModalOpen(true);
+  };
+
+  const filterSelectStyle = {
+    width: '100%',
+    padding: '0.4rem',
+    borderRadius: '4px',
+    border: '1px solid var(--border)',
+    background: 'var(--bg-main)',
+    color: 'var(--text-main)',
+    fontSize: '0.85rem'
+  };
+
+  const renderDatePopover = () => {
+    if (!isDateModalOpen) return null;
+    return (
+      <>
+        {/* Invisible full-screen overlay to close on click outside */}
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }} 
+          onClick={() => setIsDateModalOpen(false)} 
+        />
+        {/* The actual popover */}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            top: 'calc(100% + 8px)', 
+            left: 0, 
+            width: '320px', 
+            background: 'var(--bg-main)', 
+            border: '1px solid var(--border)', 
+            borderRadius: 'var(--radius-lg)', 
+            padding: '1.25rem', 
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            zIndex: 100 
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>Desde</label>
+              <input 
+                type="date" 
+                value={tempDateRange.start} 
+                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                onChange={(e) => setTempDateRange({ ...tempDateRange, start: e.target.value })} 
+                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }} 
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>Hasta</label>
+              <input 
+                type="date" 
+                value={tempDateRange.end} 
+                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                onChange={(e) => setTempDateRange({ ...tempDateRange, end: e.target.value })} 
+                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.95rem', cursor: 'pointer' }} 
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <button 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center' }} 
+                onClick={() => { setTempDateRange({ start: '', end: '' }); setDateRange({ start: '', end: '' }); setIsDateModalOpen(false); }}
+              >
+                Quitar filtro
+              </button>
+              <button 
+                className="btn-primary" 
+                style={{ flex: 1, padding: '0.6rem', justifyContent: 'center', backgroundColor: '#e2e8f0', color: '#0f172a' }} 
+                onClick={() => { setDateRange(tempDateRange); setIsDateModalOpen(false); }}
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
+      {/* Top Action Bar (Filters + Buttons) - Mobile */}
+      <div className="mobile-only-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
+          <input
+            readOnly
+            onClick={openDateModal}
+            placeholder="Fechas"
+            value={formatRange()}
+            style={filterSelectStyle}
+          />
+          {renderDatePopover()}
+        </div>
+        <select value={filterTicker} onChange={(e) => setFilterTicker(e.target.value)} style={filterSelectStyle}>
+          <option value="ALL">Todos los activos</option>
+          {uniqueTickers.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={filterSelectStyle}>
+          <option value="ALL">Todos los tipos</option>
+          {uniqueTypes.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterPlatform} onChange={(e) => setFilterPlatform(e.target.value)} style={filterSelectStyle}>
+          <option value="ALL">Todas las plataformas</option>
+          {uniquePlatforms.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        {headerActions && (
+          <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
+            {headerActions}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Equal-Width Filters */}
+      <div className="hide-on-mobile" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: '1rem',
+        alignItems: 'center',
+        gap: '1rem'
+      }}>
+        <div style={{ display: 'flex', gap: '1rem', flex: 1 }}>
+          <div style={{ position: 'relative' }}>
+            <input readOnly onClick={openDateModal} placeholder="Filtrar por fechas" value={formatRange()} style={{ ...filterSelectStyle, width: '180px', cursor: 'pointer' }} />
+            {renderDatePopover()}
+          </div>
+          <select value={filterTicker} onChange={(e) => setFilterTicker(e.target.value)} style={{ ...filterSelectStyle, width: '180px', cursor: 'pointer' }}>
+            <option value="ALL">Todos los activos</option>
+            {uniqueTickers.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={{ ...filterSelectStyle, width: '180px', cursor: 'pointer' }}>
+            <option value="ALL">Todos los tipos</option>
+            {uniqueTypes.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterPlatform} onChange={(e) => setFilterPlatform(e.target.value)} style={{ ...filterSelectStyle, width: '180px', cursor: 'pointer' }}>
+            <option value="ALL">Todas las plataformas</option>
+            {uniquePlatforms.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+
+        {/* Export/Import buttons right-aligned */}
+        {headerActions && (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {headerActions}
+          </div>
+        )}
+      </div>
+
+      {/* Empty space where the modal overlay used to be */}
+
       <div className="table-container hide-on-mobile">
         <table>
           <thead>
             <tr>
-              <th>Fecha</th>
-              <th>Activo</th>
-              <th>Tipo</th>
-              <th className="text-right">Cantidad</th>
-              <th className="text-right">Precio Unitario</th>
-              <th className="text-right">Total Operación</th>
+              <th onClick={() => handleSort('timestamp')} style={{ cursor: 'pointer' }}>Fecha <SortIcon field="timestamp" /></th>
+              <th onClick={() => handleSort('ticker')} style={{ cursor: 'pointer' }}>Activo <SortIcon field="ticker" /></th>
+              <th onClick={() => handleSort('type')} style={{ cursor: 'pointer' }}>Tipo <SortIcon field="type" /></th>
+              <th className="text-right" onClick={() => handleSort('quantity')} style={{ cursor: 'pointer' }}>Cantidad <SortIcon field="quantity" /></th>
+              <th className="text-right" onClick={() => handleSort('price')} style={{ cursor: 'pointer' }}>Precio Unitario <SortIcon field="price" /></th>
+              <th className="text-right" onClick={() => handleSort('total')} style={{ cursor: 'pointer' }}>Total Operación <SortIcon field="total" /></th>
               <th>Plataforma</th>
               <th style={{ width: '40px' }}></th>
             </tr>
           </thead>
           <tbody>
-            {transactions.length === 0 ? (
+            {filteredTransactions.length === 0 ? (
               <tr>
                 <td colSpan="8" style={{ textAlign: 'center', padding: '3rem' }}>
-                  <div className="text-muted">Aún no hay transacciones en tu historial. Utiliza el botón + para agregar una.</div>
+                  <div className="text-muted">No se encontraron transacciones.</div>
                 </td>
               </tr>
             ) : (
-              transactions.map(tx => {
+              filteredTransactions.map(tx => {
                 const isCrypto = ['Crypto', 'Criptomoneda'].includes(tx.asset_type) || ['BTC', 'XRP', 'USDT'].includes(tx.ticker);
                 let total = tx.total_value;
                 let price = tx.price_per_unit;
@@ -178,12 +432,12 @@ export default function TransactionsList({ currency, onTransactionDeleted, refre
 
       {/* Mobile Cards View for Transacciones */}
       <div className="hide-on-desktop">
-        {transactions.length === 0 ? (
+        {filteredTransactions.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)' }}>
-            Aún no hay transacciones en tu historial. Utiliza el botón + para agregar una.
+            No se encontraron transacciones.
           </div>
         ) : (
-          transactions.map(tx => {
+          filteredTransactions.map(tx => {
             const isCrypto = ['Crypto', 'Criptomoneda'].includes(tx.asset_type) || ['BTC', 'XRP', 'USDT'].includes(tx.ticker);
             let total = tx.total_value;
             let price = tx.price_per_unit;

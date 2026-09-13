@@ -791,15 +791,21 @@ export default function Dashboard({ currency }) {
           />
         ) : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '10px' }}>
-              <button className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Download size={18} /> Exportar CSV
-              </button>
-              <button className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Upload size={18} /> Importar CSV
-              </button>
-            </div>
-            <TransactionsList currency={currency} onTransactionDeleted={fetchData} refreshTrigger={refreshTransactions} />
+            <TransactionsList 
+              currency={currency} 
+              onTransactionDeleted={fetchData} 
+              refreshTrigger={refreshTransactions} 
+              headerActions={
+                <>
+                  <button className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Download size={18} /> Exportar CSV
+                  </button>
+                  <button className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Upload size={18} /> Importar CSV
+                  </button>
+                </>
+              }
+            />
           </>
         )
       )}
