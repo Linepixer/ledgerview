@@ -411,54 +411,54 @@ export default function Dashboard({ currency }) {
       {activeTab === 'portfolio' && (
         <div className="dashboard-layout">
           <div className="main-column">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
-            <div>
-              <div className="summary-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                Patrimonio Total
-                <div className="tooltip-container">
-                  <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
-                  <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-10%)', width: '250px' }}>
-                    La suma total del valor actual de todos tus activos convertida a la moneda que tenés seleccionada. Representa tu riqueza neta.
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
+              <div>
+                <div className="summary-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  Patrimonio Total
+                  <div className="tooltip-container">
+                    <HelpCircle size={14} color="var(--text-muted)" style={{ cursor: 'help' }} />
+                    <div className="tooltip-content" style={{ bottom: '150%', left: '0', transform: 'translateX(-10%)', width: '250px' }}>
+                      La suma total del valor actual de todos tus activos convertida a la moneda que tenés seleccionada. Representa tu riqueza neta.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-row" style={{ flexWrap: 'wrap' }}>
+                  <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
+                  <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: '1rem', padding: '0.2rem 0.6rem' }}>
+                    {totalProfit >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+                    {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
                   </div>
                 </div>
               </div>
-              <div className="flex-row" style={{ flexWrap: 'wrap' }}>
-                <h1 className="summary-value">{formatCurrency(totalValue, currency)}</h1>
-                <div className={`badge ${totalProfit >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: '1rem', padding: '0.2rem 0.6rem' }}>
-                  {totalProfit >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                  {formatCurrency(Math.abs(totalProfit), currency)} ({totalProfitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)
+
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <PortfolioChart data={history} isArs={isArs} />
+            </div>
+
+            <div className="summary-cards">
+              <div className="card">
+                <div className="summary-label">Dólar Bolsa</div>
+                <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                  {portfolio.exchange_rates.bolsa ? '$' + Math.round(portfolio.exchange_rates.bolsa).toLocaleString('es-AR') : '-'}
+                </div>
+              </div>
+              <div className="card">
+                <div className="summary-label">Dólar Cripto</div>
+                <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                  {portfolio.exchange_rates.cripto ? '$' + Math.round(portfolio.exchange_rates.cripto).toLocaleString('es-AR') : '-'}
+                </div>
+              </div>
+              <div className="card">
+                <div className="summary-label">Dólar Blue</div>
+                <div className="summary-value" style={{ fontSize: '1.5rem' }}>
+                  {portfolio.exchange_rates.blue ? '$' + Math.round(portfolio.exchange_rates.blue).toLocaleString('es-AR') : '-'}
                 </div>
               </div>
             </div>
 
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <PortfolioChart data={history} isArs={isArs} />
-          </div>
-
-          <div className="summary-cards">
-            <div className="card">
-              <div className="summary-label">Dólar Bolsa</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
-                {portfolio.exchange_rates.bolsa ? '$' + Math.round(portfolio.exchange_rates.bolsa).toLocaleString('es-AR') : '-'}
-              </div>
-            </div>
-            <div className="card">
-              <div className="summary-label">Dólar Cripto</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
-                {portfolio.exchange_rates.cripto ? '$' + Math.round(portfolio.exchange_rates.cripto).toLocaleString('es-AR') : '-'}
-              </div>
-            </div>
-            <div className="card">
-              <div className="summary-label">Dólar Blue</div>
-              <div className="summary-value" style={{ fontSize: '1.5rem' }}>
-                {portfolio.exchange_rates.blue ? '$' + Math.round(portfolio.exchange_rates.blue).toLocaleString('es-AR') : '-'}
-              </div>
-            </div>
-          </div>
-
-          <>
+            <>
               <div className="card" style={{ marginBottom: '1rem' }}>
                 <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   Distribución de Activos
@@ -483,9 +483,15 @@ export default function Dashboard({ currency }) {
 
               {isMobile && (
                 <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <MonthlyInvestmentWidget currency={currency} />
-                  <PassiveIncomeWidget currency={currency} />
-                  <CompoundInterestWidget portfolio={portfolio} currency={currency} />
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                    <MonthlyInvestmentWidget currency={currency} />
+                  </div>
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <PassiveIncomeWidget currency={currency} />
+                  </div>
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                    <CompoundInterestWidget portfolio={portfolio} currency={currency} />
+                  </div>
                 </div>
               )}
 
@@ -516,41 +522,41 @@ export default function Dashboard({ currency }) {
                         const valB = isArs ? b.total_value_ars : b.total_value_usd;
                         return valB - valA;
                       }).map(asset => {
-                      const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
-                      const avgPrice = isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd;
-                      const value = isArs ? asset.total_value_ars : asset.total_value_usd;
-                      const profit = isArs ? asset.potential_profit_ars : asset.potential_profit_usd;
-                      const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
-                      const isCrypto = ['BTC', 'XRP'].includes(asset.ticker);
+                        const currentPrice = isArs ? asset.current_price_ars : asset.current_price_usd;
+                        const avgPrice = isArs ? asset.average_purchase_price_ars : asset.average_purchase_price_usd;
+                        const value = isArs ? asset.total_value_ars : asset.total_value_usd;
+                        const profit = isArs ? asset.potential_profit_ars : asset.potential_profit_usd;
+                        const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
+                        const isCrypto = ['BTC', 'XRP'].includes(asset.ticker);
 
-                      return (
-                        <tr
-                          key={asset.ticker}
-                          onClick={() => navigateTo('portfolio_asset_detalle', asset)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <td>
-                            <div className="font-semibold">{asset.ticker}</div>
-                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
-                          </td>
-                          <td className="text-right font-semibold">
-                            {formatQuantity(asset.quantity, asset.ticker)}
-                          </td>
-                          <td className="text-right">{formatCurrency(currentPrice, currency)}</td>
-                          <td className="text-right text-muted">{formatCurrency(avgPrice, currency)}</td>
-                          <td className="text-right font-semibold">{formatCurrency(value, currency)}</td>
-                          <td className={`text-right ${profit >= 0 ? 'text-profit' : 'text-loss'}`}>
-                            {profit > 0 ? '+' : ''}{formatCurrency(profit, currency)}
-                          </td>
-                          <td className="text-right">
-                            <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`}>
-                              {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                            </span>
-                          </td>
-                          <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
-                        </tr>
-                      )
-                    }))}
+                        return (
+                          <tr
+                            key={asset.ticker}
+                            onClick={() => navigateTo('portfolio_asset_detalle', asset)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td>
+                              <div className="font-semibold">{asset.ticker}</div>
+                              <div className="text-muted" style={{ fontSize: '0.8rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</div>
+                            </td>
+                            <td className="text-right font-semibold">
+                              {formatQuantity(asset.quantity, asset.ticker)}
+                            </td>
+                            <td className="text-right">{formatCurrency(currentPrice, currency)}</td>
+                            <td className="text-right text-muted">{formatCurrency(avgPrice, currency)}</td>
+                            <td className="text-right font-semibold">{formatCurrency(value, currency)}</td>
+                            <td className={`text-right ${profit >= 0 ? 'text-profit' : 'text-loss'}`}>
+                              {profit > 0 ? '+' : ''}{formatCurrency(profit, currency)}
+                            </td>
+                            <td className="text-right">
+                              <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`}>
+                                {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                              </span>
+                            </td>
+                            <td className="text-right text-muted">{asset.portfolio_percentage.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
+                          </tr>
+                        )
+                      }))}
                   </tbody>
                 </table>
               </div>
@@ -567,60 +573,66 @@ export default function Dashboard({ currency }) {
                     const valB = isArs ? b.total_value_ars : b.total_value_usd;
                     return valB - valA;
                   }).map(asset => {
-                  const value = isArs ? asset.total_value_ars : asset.total_value_usd;
-                  const profit = isArs ? asset.potential_profit_ars : asset.potential_profit_usd;
-                  const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
+                    const value = isArs ? asset.total_value_ars : asset.total_value_usd;
+                    const profit = isArs ? asset.potential_profit_ars : asset.potential_profit_usd;
+                    const profitPct = isArs ? asset.profit_percentage_ars : asset.profit_percentage_usd;
 
-                  return (
-                    <div
-                      key={asset.ticker}
-                      onClick={() => navigateTo('portfolio_asset_detalle', asset)}
-                      style={{
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '1rem',
-                        marginBottom: '1rem',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{asset.ticker}</span>
-                          <span className="text-muted" style={{ fontSize: '0.85rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</span>
+                    return (
+                      <div
+                        key={asset.ticker}
+                        onClick={() => navigateTo('portfolio_asset_detalle', asset)}
+                        style={{
+                          background: 'var(--bg-card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '1rem',
+                          marginBottom: '1rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{asset.ticker}</span>
+                            <span className="text-muted" style={{ fontSize: '0.85rem' }}>{CUSTOM_ASSET_NAMES[asset.ticker] || asset.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{formatCurrency(value, currency)}</span>
+                            <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginTop: '0.3rem', fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}>
+                              {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                            </span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <span className="font-semibold" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>{formatCurrency(value, currency)}</span>
-                          <span className={`badge ${profitPct >= 0 ? 'badge-profit' : 'badge-loss'}`} style={{ marginTop: '0.3rem', fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}>
-                            {profitPct > 0 ? '+' : ''}{profitPct.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                          </span>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cantidad</span>
+                            <span className="font-semibold" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{formatQuantity(asset.quantity, asset.ticker)}</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ganancia</span>
+                            <span className={`font-semibold ${profit >= 0 ? 'text-profit' : 'text-loss'}`} style={{ fontSize: '0.95rem' }}>
+                              {profit > 0 ? '+' : ''}{formatCurrency(profit, currency)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cantidad</span>
-                          <span className="font-semibold" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>{formatQuantity(asset.quantity, asset.ticker)}</span>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ganancia</span>
-                          <span className={`font-semibold ${profit >= 0 ? 'text-profit' : 'text-loss'}`} style={{ fontSize: '0.95rem' }}>
-                            {profit > 0 ? '+' : ''}{formatCurrency(profit, currency)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                }))}
+                    )
+                  }))}
               </div>
             </>
           </div>
           {!isMobile && (
             <div className="sidebar-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <MonthlyInvestmentWidget currency={currency} />
-              <PassiveIncomeWidget currency={currency} />
-              <CompoundInterestWidget portfolio={portfolio} currency={currency} />
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                <MonthlyInvestmentWidget currency={currency} />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <PassiveIncomeWidget currency={currency} />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                <CompoundInterestWidget portfolio={portfolio} currency={currency} />
+              </div>
             </div>
           )}
         </div>
@@ -791,17 +803,17 @@ export default function Dashboard({ currency }) {
           />
         ) : (
           <>
-            <TransactionsList 
-              currency={currency} 
-              onTransactionDeleted={fetchData} 
-              refreshTrigger={refreshTransactions} 
+            <TransactionsList
+              currency={currency}
+              onTransactionDeleted={fetchData}
+              refreshTrigger={refreshTransactions}
               headerActions={[
-                  <button key="export" className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem' }} title="Exportar CSV">
-                    <Download size={18} /> <span className="hide-on-mobile">Exportar CSV</span>
-                  </button>,
-                  <button key="import" className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem' }} title="Importar CSV">
-                    <Upload size={18} /> <span className="hide-on-mobile">Importar CSV</span>
-                  </button>
+                <button key="export" className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem' }} title="Exportar CSV">
+                  <Download size={18} /> <span className="hide-on-mobile">Exportar CSV</span>
+                </button>,
+                <button key="import" className="btn-secondary" onClick={() => navigateTo('transactions', null, true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem' }} title="Importar CSV">
+                  <Upload size={18} /> <span className="hide-on-mobile">Importar CSV</span>
+                </button>
               ]}
             />
           </>
