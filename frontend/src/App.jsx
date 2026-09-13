@@ -9,6 +9,7 @@ import AdminDashboard from './components/AdminDashboard'
 import DeleteAccountConfirm from './components/DeleteAccountConfirm'
 import AccountSettings from './components/AccountSettings'
 import UserDeleteAccountConfirm from './components/UserDeleteAccountConfirm'
+import LandingPage from './components/LandingPage'
 import api from './api'
 import './index.css'
 
@@ -84,29 +85,33 @@ function App() {
     navigate('/', { replace: true })
   }
 
+  const isLandingPage = currentPath === '/'
+
   return (
-    <div className="app-container">
-      <header>
-        <div 
-          className="logo-text" 
-          onClick={() => navigate('/')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-        >
-          <img src="/logo.png" alt="LedgerView Logo" style={{ height: '32px' }} />
-          <span className="hide-on-mobile">LedgerView</span>
-        </div>
-        <div className="flex-row">
-          {isAuthenticated && !currentPath.startsWith('/admin') && (
-            <div className="currency-toggle header-currency-toggle">
-              <button className={`toggle-btn ${currency === 'ARS' ? 'active' : ''}`} onClick={() => setCurrency('ARS')}>ARS</button>
-              <button className={`toggle-btn ${currency === 'USD' ? 'active' : ''}`} onClick={() => setCurrency('USD')}>USD</button>
-            </div>
-          )}
-          {isAuthenticated && (
-            <AccountMenu user={user} onLogout={handleLogout} />
-          )}
-        </div>
-      </header>
+    <div className={isLandingPage ? "" : "app-container"}>
+      {!isLandingPage && (
+        <header>
+          <div 
+            className="logo-text" 
+            onClick={() => navigate('/')}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+          >
+            <img src="/logo.png" alt="LedgerView Logo" style={{ height: '32px' }} />
+            <span className="hide-on-mobile">LedgerView</span>
+          </div>
+          <div className="flex-row">
+            {isAuthenticated && !currentPath.startsWith('/admin') && (
+              <div className="currency-toggle header-currency-toggle">
+                <button className={`toggle-btn ${currency === 'ARS' ? 'active' : ''}`} onClick={() => setCurrency('ARS')}>ARS</button>
+                <button className={`toggle-btn ${currency === 'USD' ? 'active' : ''}`} onClick={() => setCurrency('USD')}>USD</button>
+              </div>
+            )}
+            {isAuthenticated && (
+              <AccountMenu user={user} onLogout={handleLogout} />
+            )}
+          </div>
+        </header>
+      )}
 
       <main>
         {verificationMessage && (
@@ -126,7 +131,7 @@ function App() {
               <Route path="/admin" element={<AdminDashboard user={user} />} />
               <Route path="/admin/delete-account" element={<DeleteAccountConfirm user={user} />} />
               
-              <Route path="/" element={<Dashboard currency={currency} />} />
+              <Route path="/" element={<LandingPage isAuthenticated={isAuthenticated} user={user} onLogout={handleLogout} />} />
               <Route path="/portfolio" element={<Dashboard currency={currency} />} />
               <Route path="/portfolio/possession/:ticker" element={<Dashboard currency={currency} />} />
               
@@ -142,16 +147,17 @@ function App() {
             </>
           ) : (
             <>
+              <Route path="/" element={<LandingPage isAuthenticated={isAuthenticated} />} />
               <Route path="/login" element={<Auth onLogin={onLoginSuccess} />} />
               <Route path="/signup" element={<Auth onLogin={onLoginSuccess} />} />
               <Route path="/forgot-password" element={<ForgotPassword onSwitchToLogin={() => navigate('/login')} />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
         </Routes>
       </main>
 
-      {isAuthenticated && (
+      {isAuthenticated && !isLandingPage && (
         <footer className="app-footer">
           <div style={{ maxWidth: '400px', lineHeight: '1.4' }}>LedgerView &copy; 2026 &mdash; Proyecto de código abierto para seguimiento de inversiones personales.</div>
           <div>Contacto: <a href="mailto:diazmatias@linepixer.com" style={{ color: 'inherit', textDecoration: 'none' }}>diazmatias@linepixer.com</a></div>
