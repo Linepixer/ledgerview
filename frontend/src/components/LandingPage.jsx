@@ -42,7 +42,7 @@ export default function LandingPage({ isAuthenticated, user, onLogout }) {
             Olvidate de los excels infinitos. Sincronizá tus activos, medí tu rendimiento real (XIRR) y proyectá tu futuro financiero con precisión milimétrica en una sola plataforma.
           </p>
           <div className="hero-actions animate-landing" style={{ animationDelay: '0.4s' }}>
-            <button className="btn-landing-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.15rem' }} onClick={() => navigate('/signup')}>
+            <button className="btn-landing-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.15rem' }} onClick={() => navigate(isAuthenticated ? '/portfolio' : '/signup')}>
               Empezar ahora <ArrowRight size={20} />
             </button>
             <button className="btn-landing-ghost" style={{ padding: '1rem 2.5rem', fontSize: '1.15rem' }} onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
@@ -130,12 +130,14 @@ export default function LandingPage({ isAuthenticated, user, onLogout }) {
 
       {/* CTA Section */}
       <section className="cta-section">
-        <h2>Empezá a medir tu riqueza en serio</h2>
+        <h2>{isAuthenticated ? 'Tu portafolio te espera' : 'Empezá a medir tu riqueza en serio'}</h2>
         <p style={{ color: '#a1a1aa', fontSize: '1.15rem', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
-          Unite hoy y tomá el control total de tus finanzas. Sin publicidades, sin ruido, solo tus números claros y precisos.
+          {isAuthenticated 
+            ? 'Entrá para seguir controlando tus activos, agregar transacciones y analizar tu rendimiento en tiempo real.'
+            : 'Unite hoy y tomá el control total de tus finanzas. Sin publicidades, sin ruido, solo tus números claros y precisos.'}
         </p>
-        <button className="btn-landing-primary" style={{ padding: '1.2rem 3.5rem', fontSize: '1.25rem' }} onClick={() => navigate('/signup')}>
-          Crear cuenta gratis
+        <button className="btn-landing-primary" style={{ padding: '1.2rem 3.5rem', fontSize: '1.25rem' }} onClick={() => navigate(isAuthenticated ? '/portfolio' : '/signup')}>
+          {isAuthenticated ? 'Ir al portafolio' : 'Crear cuenta gratis'}
         </button>
       </section>
 
